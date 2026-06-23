@@ -1,26 +1,141 @@
 @import "tailwindcss";
 
+/* ===========================================================
+   NEXO PATRIMONIAL — Brand System (Tailwind v4)
+   =========================================================== */
+@theme {
+  --color-navy: #0d1b2a;
+  --color-navy-800: #122236;
+  --color-navy-700: #1b2d44;
+  --color-navy-600: #243a55;
+  --color-gold: #c8a15a;
+  --color-gold-400: #d7b878;
+  --color-gold-600: #b08c43;
+  --color-ash: #e9ecef;
+  --color-ash-dark: #c7ccd2;
+  --color-cloud: #f6f7f9;
+
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-luxe: 0 30px 80px -30px rgba(13, 27, 42, 0.45);
+  --shadow-card: 0 20px 50px -25px rgba(13, 27, 42, 0.35);
+
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0d1b2a;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  border-color: rgba(13, 27, 42, 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "kern", "liga";
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: #0d1b2a;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1b2a;
+}
+::-webkit-scrollbar-thumb {
+  background: #243a55;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold);
+}
+
+/* Eyebrow / kicker label */
+.eyebrow {
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* Gold gradient text */
+.text-gold-gradient {
+  background: linear-gradient(120deg, #d7b878 0%, #c8a15a 45%, #b08c43 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Thin hairline divider */
+.hairline {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(200, 161, 90, 0.6),
+    transparent
+  );
+}
+
+/* Subtle luxe grid backdrop */
+.luxe-grid {
+  background-image:
+    linear-gradient(rgba(200, 161, 90, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 161, 90, 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+.animate-float-slow {
+  animation: float-slow 7s var(--ease-luxe) infinite;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 50s linear infinite;
+}
+
+@keyframes spin-slower-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+.animate-spin-slower-rev {
+  animation: spin-slower-rev 70s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
