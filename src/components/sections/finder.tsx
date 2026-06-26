@@ -7,13 +7,14 @@ import {
   Wallet,
   MapPin,
   Target,
-  ArrowRight,
   ArrowLeft,
   Check,
   TrendingUp,
   RefreshCw,
   Loader2,
+  MessageCircle,
 } from "lucide-react";
+import { waLink } from "@/lib/site";
 
 type Opt = { value: string; label: string };
 
@@ -276,11 +277,19 @@ export function Finder() {
 
                   <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                     <a
-                      href="#contacto"
+                      href={waLink(
+                        `Hola Nexo Patrimonial, usé el Asesor IA y me interesa una asesoría.\n\n` +
+                          `• Presupuesto: ${BUDGETS.find((o) => o.value === answers.budget)?.label ?? "—"}\n` +
+                          `• Zona: ${LOCATIONS.find((o) => o.value === answers.location)?.label ?? "—"}\n` +
+                          `• Objetivo: ${GOALS.find((o) => o.value === answers.goal)?.label ?? "—"}\n\n` +
+                          `¿Me pueden contactar con las oportunidades recomendadas?`
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gold px-6 py-3.5 text-sm font-semibold text-navy transition-all hover:bg-gold-400"
                     >
-                      Agendar asesoría con estos activos
-                      <ArrowRight size={16} />
+                      <MessageCircle size={16} />
+                      Hablar por WhatsApp con esta selección
                     </a>
                     <button
                       onClick={reset}
