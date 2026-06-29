@@ -23,7 +23,7 @@ export const SITE = {
   whatsapp: "+52 777 162 5574",
   whatsappNumber: WHATSAPP_NUMBER,
   whatsappHref: waLink("Hola Nexo Patrimonial, quiero agendar una asesoría."),
-  email: "contacto@nexopatrimonial.com", // PLACEHOLDER
+  email: "contacto@nexopatrimonial.tech",
   social: {
     linkedin: "https://www.linkedin.com", // PLACEHOLDER
     instagram: "https://www.instagram.com", // PLACEHOLDER
