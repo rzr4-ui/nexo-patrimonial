@@ -4,7 +4,7 @@
 
 // Número de WhatsApp en formato internacional SIN signos, espacios ni "+".
 // Ej. para +52 55 1234 5678  ->  "525512345678"
-const WHATSAPP_NUMBER = "525512345678"; // PLACEHOLDER
+const WHATSAPP_NUMBER = "527771625574";
 
 // Access key de Web3Forms (gratis) para recibir el formulario por correo.
 // Consíguela en https://web3forms.com poniendo tu email -> te llega la key.
@@ -18,9 +18,9 @@ export function waLink(message: string) {
 export const SITE = {
   name: "Nexo Patrimonial",
   tagline: "Patrimonio 360°",
-  phone: "+52 55 1234 5678", // PLACEHOLDER
-  phoneHref: "+525512345678", // PLACEHOLDER
-  whatsapp: "+52 55 1234 5678", // PLACEHOLDER (solo para mostrar)
+  phone: "+52 777 162 5574",
+  phoneHref: "+527771625574",
+  whatsapp: "+52 777 162 5574",
   whatsappNumber: WHATSAPP_NUMBER,
   whatsappHref: waLink("Hola Nexo Patrimonial, quiero agendar una asesoría."),
   email: "contacto@nexopatrimonial.com", // PLACEHOLDER
@@ -35,6 +35,7 @@ export const SITE = {
 export const NAV_LINKS = [
   { label: "Patrimonio 360°", href: "#patrimonio" },
   { label: "Servicios", href: "#servicios" },
+  { label: "Tecnología", href: "#tecnologia" },
   { label: "Proceso", href: "#proceso" },
   { label: "Oportunidades", href: "#oportunidades" },
   { label: "Asesor IA", href: "#asesor-ia" },
