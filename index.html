@@ -36,6 +36,10 @@
     --rojo-riesgo:#e23c3c;       /* Estado de riesgo / alerta       */
     --rojo-suave:#fdeaea;
     --ambar:#f4a623;             /* Estado intermedio               */
+    /* Colores de los logotipos (marca proveedor + cliente) */
+    --omni-rojo:#E5352B;         /* Rojo omnitrademx                */
+    --omni-azul:#16295C;         /* Azul omnitrademx                */
+    --chinoin-rojo:#E1251B;      /* Rojo Chinoin                    */
     --sombra:0 20px 60px rgba(7,59,110,.18);
     --radio:22px;
     --fuente:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
@@ -76,8 +80,8 @@
     width:46px;height:46px;flex-shrink:0;
     filter:drop-shadow(0 4px 10px rgba(10,110,189,.25));
   }
-  .lockup .nombre{font-size:24px;font-weight:800;letter-spacing:-.5px;color:var(--azul-profundo)}
-  .lockup .nombre span{color:var(--azul-clinico)}
+  .lockup .nombre{font-size:24px;font-weight:800;letter-spacing:-.5px;color:var(--omni-azul)}
+  .lockup .nombre span{color:var(--omni-azul)}
   .lockup .tag{font-size:12.5px;color:var(--gris-texto);font-weight:600;margin-top:2px}
 
   /* [CONFIG-LOGO] Espacio de co-branding para el logo del CLIENTE (Chinoin).
@@ -88,14 +92,8 @@
     background:var(--blanco);border:1px dashed var(--gris-borde);
     box-shadow:0 4px 16px rgba(7,59,110,.06);
   }
-  .cobrand small{font-size:10px;color:#9aa8b8;text-transform:uppercase;letter-spacing:1px;display:block}
-  .cobrand .cliente{font-size:16px;font-weight:800;color:var(--azul-profundo)}
-  .cobrand .placeholder{
-    width:40px;height:40px;border-radius:10px;
-    background:linear-gradient(135deg,var(--azul-suave),#d6e8f8);
-    display:flex;align-items:center;justify-content:center;
-    font-size:9px;font-weight:800;color:var(--azul-clinico);text-align:center;line-height:1.1;
-  }
+  .cobrand small{font-size:10px;color:#9aa8b8;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px}
+  .cobrand .chinoin-logo{width:118px;height:26px;display:block}
 
   /* ================= MOCKUP DE CELULAR (marco tipo iPhone) ================== */
   .escena{
@@ -203,6 +201,19 @@
   }
   .btn-primario:disabled{opacity:.7;cursor:progress}
   .btn-primario svg{width:22px;height:22px}
+
+  /* Botón secundario "Reproducir demo automática" */
+  .btn-auto{
+    width:100%;margin-top:10px;padding:12px;font-family:inherit;font-weight:800;font-size:13.5px;
+    border:1.5px solid var(--gris-borde);border-radius:14px;background:var(--blanco);
+    color:var(--azul-clinico);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .15s ease, border-color .2s, background .2s;
+  }
+  .btn-auto:hover{border-color:var(--azul-clinico);background:var(--azul-suave)}
+  .btn-auto:active{transform:scale(.97)}
+  .btn-auto:disabled{opacity:.6;cursor:progress}
+  .btn-auto svg{width:16px;height:16px}
 
   /* ---------------- VISTA 2: Arteria + controles --------------------------- */
   #vistaAR{background:linear-gradient(180deg,#fbfdff 0%,#eef5fc 100%)}
@@ -317,9 +328,12 @@
     display:flex;flex-direction:column;align-items:center;gap:8px;
   }
   footer .lockup-cierre{display:flex;align-items:center;gap:10px}
-  footer .lockup-cierre .nombre{font-size:20px;font-weight:800;color:var(--azul-profundo)}
-  footer .lockup-cierre .nombre span{color:var(--azul-clinico)}
+  footer .lockup-cierre .nombre{font-size:20px;font-weight:800;color:var(--omni-azul)}
+  footer .lockup-cierre .nombre span{color:var(--omni-azul)}
   footer .tag-cierre{font-size:13px;color:var(--gris-texto);font-weight:600;font-style:italic}
+  footer .colab{display:flex;align-items:center;gap:9px;margin-top:6px}
+  footer .colab span{font-size:11px;color:#9aa8b8;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+  footer .chinoin-cierre{width:96px;height:22px}
   footer .legal{font-size:11px;color:#9aa8b8;margin-top:4px}
 
   /* -------- Ajustes responsive: en pantallas chicas todo se comprime ------- */
@@ -336,33 +350,50 @@
 </head>
 <body>
 
-  <!-- ============ ENCABEZADO: marca Omnitrade + co-branding cliente ======== -->
+  <!-- ==========================================================================
+       [CONFIG-LOGO] LOGOTIPOS REUTILIZABLES (definidos una vez con <symbol>)
+       - #omniMark   → isotipo omnitrademx (anillo rojo/azul + flecha)
+       - #chinoinLogo→ logotipo Chinoin (wordmark rojo)
+       Para usar un archivo real en su lugar, reemplaza el <use> por un <img>.
+       ========================================================================== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <!-- Isotipo omnitrademx: anillo con base azul y flecha ascendente roja -->
+    <symbol id="omniMark" viewBox="0 0 64 64">
+      <!-- anillo rojo (círculo casi completo) -->
+      <circle cx="32" cy="32" r="24" fill="none" stroke="var(--omni-rojo)" stroke-width="8"/>
+      <!-- base azul: arco inferior que sube por la derecha -->
+      <path d="M9.6 39.8 A24 24 0 0 0 55.2 34.6" fill="none"
+            stroke="var(--omni-azul)" stroke-width="8" stroke-linecap="round"/>
+      <!-- flecha roja ascendente (crecimiento) -->
+      <path d="M19 43 C20 29 29 23 43 24" fill="none"
+            stroke="var(--omni-rojo)" stroke-width="6.5" stroke-linecap="round"/>
+      <path d="M35.5 17 L48 22 L41.5 33.5 Z" fill="var(--omni-rojo)"/>
+    </symbol>
+    <!-- Logotipo Chinoin (wordmark) -->
+    <symbol id="chinoinLogo" viewBox="0 0 152 44">
+      <text x="0" y="33" font-family="Arial Black, Arial, sans-serif" font-weight="900"
+            font-size="34" letter-spacing="-1" fill="var(--chinoin-rojo)">CHINOIN</text>
+      <text x="138" y="15" font-family="Arial, sans-serif" font-size="11"
+            fill="var(--chinoin-rojo)">®</text>
+    </symbol>
+  </svg>
+
+  <!-- ============ ENCABEZADO: marca omnitrademx + co-branding cliente ====== -->
   <header class="marca">
     <div class="lockup">
-      <!-- [CONFIG-LOGO] Logo Omnitrade (SVG inline; reemplazable por <img>) -->
-      <svg class="logo-omni" viewBox="0 0 64 64" aria-label="Omnitrade">
-        <defs>
-          <linearGradient id="gOmni" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#0a6ebd"/><stop offset="1" stop-color="#073b6e"/>
-          </linearGradient>
-        </defs>
-        <circle cx="32" cy="32" r="30" fill="url(#gOmni)"/>
-        <!-- pulso/latido estilizado -->
-        <path d="M12 34 H24 L28 22 L36 44 L40 32 H52" fill="none" stroke="#fff"
-              stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <!-- [CONFIG-LOGO] Isotipo omnitrademx -->
+      <svg class="logo-omni" viewBox="0 0 64 64" aria-label="omnitrademx"><use href="#omniMark"/></svg>
       <div>
-        <div class="nombre">Omni<span>trade</span></div>
+        <div class="nombre">omnitrade<span>mx</span></div>
         <div class="tag">Innovación con propósito médico</div>
       </div>
     </div>
 
-    <!-- [CONFIG-LOGO] Bloque de co-branding del CLIENTE. Sustituir por logo real. -->
+    <!-- [CONFIG-LOGO] Co-branding del CLIENTE (logotipo Chinoin real) -->
     <div class="cobrand">
-      <div class="placeholder">TU<br>LOGO</div>
       <div>
         <small>Presentado para</small>
-        <div class="cliente">Chinoin</div>
+        <svg class="chinoin-logo" viewBox="0 0 152 44" role="img" aria-label="Chinoin"><use href="#chinoinLogo"/></svg>
       </div>
     </div>
   </header>
@@ -404,6 +435,14 @@
               <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M3 12h18"/>
             </svg>
             <span id="btnEscanearTxt">Escanear</span>
+          </button>
+
+          <!-- Modo automático: corre todo el recorrido solo (ideal para proyectar) -->
+          <button class="btn-auto" id="btnAuto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/>
+            </svg>
+            <span id="btnAutoTxt">Reproducir demo automática</span>
           </button>
         </section>
 
@@ -472,13 +511,17 @@
   <!-- =========================== FOOTER / CIERRE =========================== -->
   <footer class="cierre">
     <div class="lockup-cierre">
-      <svg class="logo-omni" style="width:34px;height:34px" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="32" cy="32" r="30" fill="url(#gOmni)"/>
-        <path d="M12 34 H24 L28 22 L36 44 L40 32 H52" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <div class="nombre">Omni<span>trade</span></div>
+      <svg class="logo-omni" style="width:36px;height:36px" viewBox="0 0 64 64" aria-hidden="true"><use href="#omniMark"/></svg>
+      <div class="nombre">omnitrade<span>mx</span></div>
     </div>
     <div class="tag-cierre">"Innovación con propósito médico"</div>
+
+    <!-- Co-branding de cierre: colaboración omnitrademx × Chinoin -->
+    <div class="colab">
+      <span>Una propuesta para</span>
+      <svg class="chinoin-logo chinoin-cierre" viewBox="0 0 152 44" role="img" aria-label="Chinoin"><use href="#chinoinLogo"/></svg>
+    </div>
+
     <div class="legal">Prototipo demostrativo · Contenido educativo ilustrativo, no sustituye consejo médico.</div>
   </footer>
 
@@ -596,11 +639,7 @@ $('btnReset').addEventListener('click', ()=>{
   etapaActual = 0;
   slider.value = 0;
   actualizarUI();
-  // Regresa a la pantalla de escaneo
-  $('vistaAR').classList.remove('activa');
-  $('vistaScan').classList.add('activa');
-  // Empaque vuelve a estado desaturado
-  $('empaque').classList.remove('viva');
+  volverAEscaneo();   // regresa a la pantalla de escaneo
 });
 
 /* ==========================================================================
@@ -791,6 +830,58 @@ function dibujarPlaca(lado){
   ctx.fillStyle = g;
   ctx.fill();
 }
+
+/* ==========================================================================
+   MODO AUTOMÁTICO — "Reproducir demo"
+   Corre todo el recorrido solo, con pausas para narrar en la junta.
+   Ajusta los tiempos (en ms) del arreglo PASOS para acelerar/ralentizar.
+   ========================================================================== */
+let reproduciendo = false;
+const dormir = (ms)=> new Promise(r=> setTimeout(r, ms));
+
+async function reproducirDemo(){
+  if(reproduciendo) return;
+  reproduciendo = true;
+  const btn = $('btnAuto');
+  btn.disabled = true;
+  $('btnAutoTxt').textContent = 'Reproduciendo…';
+
+  // 1) Partir siempre desde la pantalla de escaneo
+  volverAEscaneo();
+  slider.value = 0; etapaActual = 0; tratado = false; actualizarUI();
+  await dormir(1000);
+
+  // 2) Escaneo del empaque
+  simularEscaneo();
+  await dormir(2000);          // espera la transición a la vista AR
+
+  // 3) Recorrido por las 4 etapas de la enfermedad
+  await dormir(1200);          // pausa en "Arteria sana"
+  for(let i=1;i<=3;i++){
+    slider.value = i;
+    irAEtapa(i);
+    await dormir(2300);        // deja ver cómo crece la placa y sube la presión
+  }
+
+  // 4) Aplicar tratamiento → mejora
+  await dormir(500);
+  tratado = true; actualizarUI();
+  await dormir(3400);          // deja leer el mensaje de adherencia
+
+  // 5) Listo: regresa el botón a su estado normal
+  $('btnAutoTxt').textContent = 'Reproducir demo automática';
+  btn.disabled = false;
+  reproduciendo = false;
+}
+
+/* Reutilizable: regresa la UI a la pantalla de escaneo */
+function volverAEscaneo(){
+  $('vistaAR').classList.remove('activa');
+  $('vistaScan').classList.add('activa');
+  $('empaque').classList.remove('viva');
+}
+
+$('btnAuto').addEventListener('click', reproducirDemo);
 
 /* Arranca todo */
 actualizarUI();
