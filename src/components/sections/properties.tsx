@@ -91,6 +91,56 @@ const REMATES: Remate[] = [
     estatus: "Etapa 5 / 10",
     img: "/remates/tuy-23.jpg",
   },
+  {
+    id: "coyoacan-depto",
+    tipo: "Departamento",
+    ubicacion: "Del Carmen, Coyoacán, CDMX",
+    precioRemate: 1_650_000,
+    valorComercial: 2_900_000,
+    recamaras: 2,
+    banos: 1,
+    mediosBanos: 1,
+    estacionamiento: 1,
+    terreno: 68,
+    construccion: 72,
+    descripcion:
+      "Estancia, comedor, cocina integral, 2 recámaras con clóset, baño completo y medio baño, área de lavado y un cajón de estacionamiento.",
+    estatus: "Nuevo remate",
+    img: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "iztapalapa-casa",
+    tipo: "Casa · Dos plantas",
+    ubicacion: "Santa Martha, Iztapalapa, CDMX",
+    precioRemate: 890_000,
+    valorComercial: 1_780_000,
+    recamaras: 3,
+    banos: 2,
+    estacionamiento: 1,
+    terreno: 90,
+    construccion: 120,
+    descripcion:
+      "Planta baja: sala, comedor, cocina y medio baño. Planta alta: 3 recámaras y 2 baños completos. Patio de servicio y cochera para un auto.",
+    estatus: "Ejecución de fideicomiso",
+    img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "ecatepec-casa",
+    tipo: "Casa en conjunto",
+    ubicacion: "Las Américas, Ecatepec, Edo. de México",
+    precioRemate: 720_000,
+    valorComercial: 1_450_000,
+    recamaras: 2,
+    banos: 1,
+    mediosBanos: 1,
+    estacionamiento: 1,
+    terreno: 60,
+    construccion: 75,
+    descripcion:
+      "Sala-comedor, cocina, medio baño y patio de servicio en planta baja; 2 recámaras y baño completo en planta alta. Cochera techada.",
+    estatus: "Nuevo remate",
+    img: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+  },
 ];
 
 const mxn = (n: number) =>
@@ -359,7 +409,7 @@ export function Properties() {
                   {r.estacionamiento ? (
                     <span className="inline-flex items-center gap-1.5">
                       <Car size={15} className="text-gold" />
-                      {r.estacionamiento} autos
+                      {r.estacionamiento} auto{r.estacionamiento === 1 ? "" : "s"}
                     </span>
                   ) : null}
                   {r.bodegas ? (
