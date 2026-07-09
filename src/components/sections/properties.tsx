@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -11,6 +12,8 @@ import {
   Warehouse,
   MessageCircle,
   ArrowUpRight,
+  Lock,
+  Send,
 } from "lucide-react";
 import { staggerContainer, staggerItem, Reveal } from "@/components/motion/reveal";
 import { waLink } from "@/lib/site";
@@ -93,6 +96,90 @@ function descuento(r: Remate) {
   return Math.round((1 - r.precioRemate / r.valorComercial) * 100);
 }
 
+/** CTA: captura zona de interés + datos y abre WhatsApp con el mensaje listo. */
+function ZoneLeadCTA() {
+  const [nombre, setNombre] = useState("");
+  const [contacto, setContacto] = useState("");
+  const [zona, setZona] = useState("");
+  const disabled = !nombre.trim() || !contacto.trim() || !zona.trim();
+
+  const enviar = (e: FormEvent) => {
+    e.preventDefault();
+    if (disabled) return;
+    const msg =
+      "Hola Nexo Patrimonial, quiero que me contacten.\n" +
+      `• Nombre: ${nombre}\n` +
+      `• Contacto: ${contacto}\n` +
+      `• Zona de interés: ${zona}`;
+    window.open(waLink(msg), "_blank", "noopener,noreferrer");
+  };
+
+  const inputCls =
+    "rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-gold/60 focus:bg-white/10";
+
+  return (
+    <Reveal>
+      <div className="mt-14 overflow-hidden rounded-3xl bg-navy p-8 shadow-card sm:p-10 lg:p-12">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1.15fr] lg:items-center">
+          <div>
+            <div className="mb-4 flex items-center gap-3">
+              <span className="h-px w-8 bg-gold" />
+              <span className="eyebrow text-gold">Oportunidades a tu medida</span>
+            </div>
+            <h3 className="text-2xl font-bold leading-tight text-white sm:text-3xl">
+              ¿No encuentras tu zona?{" "}
+              <span className="text-gold-gradient">Nosotros te la buscamos.</span>
+            </h3>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-white/60">
+              Déjanos la zona que te interesa y tus datos. Nuestro equipo te contacta con
+              los remates disponibles que se ajusten a tu perfil de inversión.
+            </p>
+          </div>
+
+          <form onSubmit={enviar} className="grid gap-3 sm:grid-cols-2">
+            <input
+              type="text"
+              required
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              placeholder="Tu nombre"
+              className={inputCls}
+            />
+            <input
+              type="text"
+              required
+              value={contacto}
+              onChange={(e) => setContacto(e.target.value)}
+              placeholder="WhatsApp o correo"
+              className={inputCls}
+            />
+            <input
+              type="text"
+              required
+              value={zona}
+              onChange={(e) => setZona(e.target.value)}
+              placeholder="Zona de interés (p. ej. Benito Juárez, CDMX)"
+              className={`${inputCls} sm:col-span-2`}
+            />
+            <button
+              type="submit"
+              disabled={disabled}
+              className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gold px-5 py-3 text-sm font-semibold text-navy transition-all hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2"
+            >
+              <Send size={16} />
+              Quiero que me contacten
+            </button>
+            <p className="text-[0.7rem] leading-relaxed text-white/35 sm:col-span-2">
+              Al enviar se abrirá WhatsApp con tus datos listos. Tu información se usa
+              únicamente para darte seguimiento.
+            </p>
+          </form>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
 export function Properties() {
   return (
     <section id="oportunidades" className="relative bg-cloud py-24 lg:py-32">
@@ -143,9 +230,15 @@ export function Properties() {
                   alt={r.tipo}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                  className="scale-110 object-cover blur-[9px] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.16]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/25 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/30 to-navy/10" />
+
+                {/* Fachada difuminada por privacidad */}
+                <span className="absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full bg-navy/70 px-3 py-1.5 text-[0.7rem] font-medium text-white/90 ring-1 ring-white/15 backdrop-blur-sm">
+                  <Lock size={12} className="text-gold" />
+                  Fachada reservada
+                </span>
 
                 <span className="absolute left-4 top-4 rounded-full bg-gold px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-wide text-navy">
                   {r.estatus}
@@ -233,6 +326,8 @@ export function Properties() {
             </motion.article>
           ))}
         </motion.div>
+
+        <ZoneLeadCTA />
 
         <Reveal delay={0.1}>
           <p className="mt-10 max-w-3xl text-xs leading-relaxed text-navy/45">
