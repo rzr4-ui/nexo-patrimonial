@@ -36,8 +36,8 @@ type Remate = {
 const REMATES: Remate[] = [
   {
     id: "miguel-laurent-203",
-    tipo: "Departamento · Condominio Privanza",
-    ubicacion: "Miguel Laurent 705, Depto 203, Del Valle Sur, Benito Juárez, CDMX",
+    tipo: "Departamento en condominio",
+    ubicacion: "Del Valle Sur, Benito Juárez, CDMX",
     precioRemate: 1_350_000,
     valorComercial: 5_441_000,
     recamaras: 3,
@@ -54,7 +54,7 @@ const REMATES: Remate[] = [
   {
     id: "calle-27-8",
     tipo: "Casa · Dos plantas",
-    ubicacion: "Calle 27 #8, Valentín Gómez Farías, Venustiano Carranza, CDMX",
+    ubicacion: "Valentín Gómez Farías, Venustiano Carranza, CDMX",
     precioRemate: 1_100_000,
     valorComercial: 3_117_000,
     recamaras: 5,
@@ -72,7 +72,7 @@ const REMATES: Remate[] = [
   {
     id: "tuy-23",
     tipo: "Departamento en edificio",
-    ubicacion: "Tuy #23, Piso 2, Postal, Benito Juárez, CDMX. 03410",
+    ubicacion: "Postal, Benito Juárez, CDMX",
     precioRemate: 1_300_000,
     valorComercial: 2_000_000,
     recamaras: 1,

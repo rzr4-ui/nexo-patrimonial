@@ -32,7 +32,7 @@ const TESTIMONIALS = [
     name: "Ricardo Fuentes",
     role: "Médico e inversionista",
     quote:
-      "No tenía tiempo para analizar expedientes. El scoring de riesgo de Nexo me dio claridad en minutos y adquirí un departamento muy por debajo de su valor comercial.",
+      "El motor de IA de Nexo analizó decenas de expedientes y me ayudó a elegir la propiedad correcta. La adjudicamos en menos de un año y hoy el inmueble ya está a mi nombre.",
     img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=900&q=80",
   },
   {
