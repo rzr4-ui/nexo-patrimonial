@@ -14,9 +14,14 @@ import {
   ArrowUpRight,
   Lock,
   Send,
+  Loader2,
+  Check,
+  AlertCircle,
 } from "lucide-react";
 import { staggerContainer, staggerItem, Reveal } from "@/components/motion/reveal";
-import { waLink } from "@/lib/site";
+import { waLink, WEB3FORMS_KEY } from "@/lib/site";
+
+const KEY_MISSING = !WEB3FORMS_KEY || WEB3FORMS_KEY.startsWith("REEMPLAZAR");
 
 type Remate = {
   id: string;
@@ -96,23 +101,62 @@ function descuento(r: Remate) {
   return Math.round((1 - r.precioRemate / r.valorComercial) * 100);
 }
 
-/** CTA: captura zona de interés + datos y abre WhatsApp con el mensaje listo. */
+/** CTA: captura zona de interés + datos, los envía por correo (Web3Forms)
+ *  y, si aún no hay access key, cae a WhatsApp con el mensaje listo. */
 function ZoneLeadCTA() {
   const [nombre, setNombre] = useState("");
   const [contacto, setContacto] = useState("");
   const [zona, setZona] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">(
+    "idle",
+  );
+  const [errorMsg, setErrorMsg] = useState("");
   const disabled = !nombre.trim() || !contacto.trim() || !zona.trim();
 
-  const enviar = (e: FormEvent) => {
+  async function enviar(e: FormEvent) {
     e.preventDefault();
     if (disabled) return;
-    const msg =
+    setStatus("sending");
+    setErrorMsg("");
+
+    const waMsg =
       "Hola Nexo Patrimonial, quiero que me contacten.\n" +
       `• Nombre: ${nombre}\n` +
       `• Contacto: ${contacto}\n` +
       `• Zona de interés: ${zona}`;
-    window.open(waLink(msg), "_blank", "noopener,noreferrer");
-  };
+
+    // Fallback: sin access key de Web3Forms, enviamos por WhatsApp.
+    if (KEY_MISSING) {
+      window.open(waLink(waMsg), "_blank", "noopener,noreferrer");
+      setStatus("success");
+      return;
+    }
+
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: "Nuevo lead por zona — Nexo Patrimonial",
+          from_name: "Sitio Nexo Patrimonial",
+          nombre,
+          contacto,
+          zona_de_interes: zona,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+        setErrorMsg(json.message || "No se pudo enviar. Intenta de nuevo.");
+      }
+    } catch {
+      setStatus("error");
+      setErrorMsg("Error de conexión. Revisa tu internet e intenta de nuevo.");
+    }
+  }
 
   const inputCls =
     "rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-gold/60 focus:bg-white/10";
@@ -136,44 +180,83 @@ function ZoneLeadCTA() {
             </p>
           </div>
 
-          <form onSubmit={enviar} className="grid gap-3 sm:grid-cols-2">
-            <input
-              type="text"
-              required
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              placeholder="Tu nombre"
-              className={inputCls}
-            />
-            <input
-              type="text"
-              required
-              value={contacto}
-              onChange={(e) => setContacto(e.target.value)}
-              placeholder="WhatsApp o correo"
-              className={inputCls}
-            />
-            <input
-              type="text"
-              required
-              value={zona}
-              onChange={(e) => setZona(e.target.value)}
-              placeholder="Zona de interés (p. ej. Benito Juárez, CDMX)"
-              className={`${inputCls} sm:col-span-2`}
-            />
-            <button
-              type="submit"
-              disabled={disabled}
-              className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gold px-5 py-3 text-sm font-semibold text-navy transition-all hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2"
-            >
-              <Send size={16} />
-              Quiero que me contacten
-            </button>
-            <p className="text-[0.7rem] leading-relaxed text-white/35 sm:col-span-2">
-              Al enviar se abrirá WhatsApp con tus datos listos. Tu información se usa
-              únicamente para darte seguimiento.
-            </p>
-          </form>
+          {status === "success" ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-gold/20 bg-white/[0.03] px-6 py-10 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gold text-navy">
+                <Check size={26} />
+              </span>
+              <h4 className="mt-5 text-xl font-bold text-white">¡Datos recibidos!</h4>
+              <p className="mt-2 max-w-xs text-sm text-white/60">
+                Gracias. Nuestro equipo te contactará con las oportunidades de tu zona.
+              </p>
+              <button
+                onClick={() => {
+                  setStatus("idle");
+                  setNombre("");
+                  setContacto("");
+                  setZona("");
+                }}
+                className="mt-6 text-sm font-semibold text-gold hover:text-gold-400"
+              >
+                Enviar otra solicitud
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={enviar} className="grid gap-3 sm:grid-cols-2">
+              <input
+                type="text"
+                required
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                placeholder="Tu nombre"
+                className={inputCls}
+              />
+              <input
+                type="text"
+                required
+                value={contacto}
+                onChange={(e) => setContacto(e.target.value)}
+                placeholder="WhatsApp o correo"
+                className={inputCls}
+              />
+              <input
+                type="text"
+                required
+                value={zona}
+                onChange={(e) => setZona(e.target.value)}
+                placeholder="Zona de interés (p. ej. Benito Juárez, CDMX)"
+                className={`${inputCls} sm:col-span-2`}
+              />
+
+              {status === "error" && (
+                <p className="flex items-center gap-2 text-sm text-red-400 sm:col-span-2">
+                  <AlertCircle size={15} /> {errorMsg}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={disabled || status === "sending"}
+                className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gold px-5 py-3 text-sm font-semibold text-navy transition-all hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2"
+              >
+                {status === "sending" ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Enviando…
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    Quiero que me contacten
+                  </>
+                )}
+              </button>
+              <p className="text-[0.7rem] leading-relaxed text-white/35 sm:col-span-2">
+                Recibimos tus datos por correo y te contactamos. Tu información se usa
+                únicamente para darte seguimiento.
+              </p>
+            </form>
+          )}
         </div>
       </div>
     </Reveal>
