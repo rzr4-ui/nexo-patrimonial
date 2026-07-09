@@ -28,6 +28,27 @@ const TESTIMONIALS = [
       "Nos ayudaron a blindar y ordenar el patrimonio familiar pensando en la siguiente generación. Profesionalismo y discreción de primer nivel.",
     img: "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?auto=format&fit=crop&w=900&q=80",
   },
+  {
+    name: "Ricardo Fuentes",
+    role: "Médico e inversionista",
+    quote:
+      "No tenía tiempo para analizar expedientes. El scoring de riesgo de Nexo me dio claridad en minutos y adquirí un departamento muy por debajo de su valor comercial.",
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    name: "Alejandra Nava",
+    role: "Emprendedora",
+    quote:
+      "Los remates me daban miedo por la parte jurídica. Aquí validaron cada documento antes de avanzar; hoy tengo un activo que ya genera renta y total tranquilidad.",
+    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    name: "Jorge y Patricia Sandoval",
+    role: "Patrimonio familiar",
+    quote:
+      "Convertimos nuestros ahorros en una propiedad con plusvalía real. Una asesoría cercana y transparente, con datos claros y sin promesas vacías.",
+    img: "https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?auto=format&fit=crop&w=900&q=80",
+  },
 ];
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -114,7 +135,7 @@ export function Testimonials() {
               ))}
             </div>
 
-            <div className="mt-9 flex gap-3">
+            <div className="mt-9 flex flex-wrap gap-3">
               {TESTIMONIALS.map((item, i) => (
                 <button
                   key={item.name}
