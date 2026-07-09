@@ -26,10 +26,6 @@ export const SITE = {
   email: "contacto@nexopatrimonial.tech",
   social: {
     tiktok: "https://vt.tiktok.com/ZSCKuny7H/",
-    linkedin: "https://www.linkedin.com", // PLACEHOLDER
-    instagram: "https://www.instagram.com", // PLACEHOLDER
-    facebook: "https://www.facebook.com", // PLACEHOLDER
-    youtube: "https://www.youtube.com", // PLACEHOLDER
   },
 };
 

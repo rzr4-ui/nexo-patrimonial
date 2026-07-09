@@ -4,28 +4,6 @@ import { NAV_LINKS, SITE } from "@/lib/site";
 
 type IconProps = { size?: number; className?: string };
 
-const Linkedin = ({ size = 18, className }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
-    <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM10 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C21.4 8.65 22 11 22 14.1V21h-4v-6.1c0-1.46-.03-3.33-2.03-3.33-2.03 0-2.34 1.58-2.34 3.22V21h-4z" />
-  </svg>
-);
-const Instagram = ({ size = 18, className }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
-    <rect x="2" y="2" width="20" height="20" rx="5" />
-    <circle cx="12" cy="12" r="4" />
-    <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none" />
-  </svg>
-);
-const Facebook = ({ size = 18, className }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
-    <path d="M14 9h3V5.5h-3c-2.2 0-3.5 1.4-3.5 3.6V11H8v3.5h2.5V22h3.5v-7.5h2.7l.5-3.5H14V9.3c0-.2.2-.3.5-.3z" />
-  </svg>
-);
-const Youtube = ({ size = 18, className }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
-    <path d="M22 8.2a3 3 0 0 0-2.1-2.1C18 5.5 12 5.5 12 5.5s-6 0-7.9.6A3 3 0 0 0 2 8.2 31 31 0 0 0 1.6 12 31 31 0 0 0 2 15.8a3 3 0 0 0 2.1 2.1c1.9.6 7.9.6 7.9.6s6 0 7.9-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22.4 12 31 31 0 0 0 22 8.2zM10 15V9l5.2 3z" />
-  </svg>
-);
 const Tiktok = ({ size = 18, className }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
     <path d="M16.5 3c.29 2.06 1.44 3.3 3.44 3.43v2.32c-1.16.11-2.18-.27-3.36-.99v5.99c0 3.79-3.32 5.34-6.07 4.66-2.31-.57-3.77-2.66-3.5-5.06.27-2.4 2.37-4.15 4.85-3.86v2.5c-.3-.05-.62-.09-.94-.06-1.12.11-1.98.98-1.93 2.12.05 1.14.94 1.96 2.11 1.9 1.19-.06 2.05-.99 2.05-2.36V3h3.35z" />
@@ -56,10 +34,6 @@ export function Footer() {
             <div className="mt-6 flex gap-3">
               {[
                 { Icon: Tiktok, href: SITE.social.tiktok, label: "TikTok" },
-                { Icon: Instagram, href: SITE.social.instagram, label: "Instagram" },
-                { Icon: Facebook, href: SITE.social.facebook, label: "Facebook" },
-                { Icon: Linkedin, href: SITE.social.linkedin, label: "LinkedIn" },
-                { Icon: Youtube, href: SITE.social.youtube, label: "YouTube" },
               ].map(({ Icon, href, label }) => (
                 <a
                   key={label}
