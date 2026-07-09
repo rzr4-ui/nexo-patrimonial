@@ -6,9 +6,9 @@
 // Ej. para +52 55 1234 5678  ->  "525512345678"
 const WHATSAPP_NUMBER = "527771625574";
 
-// Access key de Web3Forms (gratis) para recibir el formulario por correo.
-// Consíguela en https://web3forms.com poniendo tu email -> te llega la key.
-export const WEB3FORMS_KEY = "REEMPLAZAR_CON_TU_ACCESS_KEY"; // PLACEHOLDER
+// Access key de Web3Forms — los leads llegan a contacto@nexopatrimonial.tech
+// (formulario "NexoPat"). La key es pública/frontend; solo permite enviar.
+export const WEB3FORMS_KEY = "e80a93fc-6710-4cb8-9c6c-baf8ebcf7c1d";
 
 /** Construye un enlace de WhatsApp con un mensaje prellenado. */
 export function waLink(message: string) {

@@ -16,7 +16,6 @@ import {
   Send,
   Loader2,
   Check,
-  AlertCircle,
 } from "lucide-react";
 import { staggerContainer, staggerItem, Reveal } from "@/components/motion/reveal";
 import { waLink, WEB3FORMS_KEY } from "@/lib/site";
@@ -107,31 +106,31 @@ function ZoneLeadCTA() {
   const [nombre, setNombre] = useState("");
   const [contacto, setContacto] = useState("");
   const [zona, setZona] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">(
-    "idle",
-  );
-  const [errorMsg, setErrorMsg] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "success">("idle");
   const disabled = !nombre.trim() || !contacto.trim() || !zona.trim();
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
     if (disabled) return;
     setStatus("sending");
-    setErrorMsg("");
 
     const waMsg =
       "Hola Nexo Patrimonial, quiero que me contacten.\n" +
       `• Nombre: ${nombre}\n` +
       `• Contacto: ${contacto}\n` +
       `• Zona de interés: ${zona}`;
-
-    // Fallback: sin access key de Web3Forms, enviamos por WhatsApp.
-    if (KEY_MISSING) {
+    const whatsappFallback = () => {
       window.open(waLink(waMsg), "_blank", "noopener,noreferrer");
       setStatus("success");
+    };
+
+    // Sin access key configurada → directo a WhatsApp.
+    if (KEY_MISSING) {
+      whatsappFallback();
       return;
     }
 
+    // Intento por correo (Web3Forms). Si falla (red/CORS), respaldo por WhatsApp.
     try {
       const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
@@ -146,15 +145,10 @@ function ZoneLeadCTA() {
         }),
       });
       const json = await res.json();
-      if (json.success) {
-        setStatus("success");
-      } else {
-        setStatus("error");
-        setErrorMsg(json.message || "No se pudo enviar. Intenta de nuevo.");
-      }
+      if (json.success) setStatus("success");
+      else whatsappFallback();
     } catch {
-      setStatus("error");
-      setErrorMsg("Error de conexión. Revisa tu internet e intenta de nuevo.");
+      whatsappFallback();
     }
   }
 
@@ -227,12 +221,6 @@ function ZoneLeadCTA() {
                 placeholder="Zona de interés (p. ej. Benito Juárez, CDMX)"
                 className={`${inputCls} sm:col-span-2`}
               />
-
-              {status === "error" && (
-                <p className="flex items-center gap-2 text-sm text-red-400 sm:col-span-2">
-                  <AlertCircle size={15} /> {errorMsg}
-                </p>
-              )}
 
               <button
                 type="submit"
