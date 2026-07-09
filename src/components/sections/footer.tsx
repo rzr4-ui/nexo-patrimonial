@@ -26,6 +26,11 @@ const Youtube = ({ size = 18, className }: IconProps) => (
     <path d="M22 8.2a3 3 0 0 0-2.1-2.1C18 5.5 12 5.5 12 5.5s-6 0-7.9.6A3 3 0 0 0 2 8.2 31 31 0 0 0 1.6 12 31 31 0 0 0 2 15.8a3 3 0 0 0 2.1 2.1c1.9.6 7.9.6 7.9.6s6 0 7.9-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22.4 12 31 31 0 0 0 22 8.2zM10 15V9l5.2 3z" />
   </svg>
 );
+const Tiktok = ({ size = 18, className }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+    <path d="M16.5 3c.29 2.06 1.44 3.3 3.44 3.43v2.32c-1.16.11-2.18-.27-3.36-.99v5.99c0 3.79-3.32 5.34-6.07 4.66-2.31-.57-3.77-2.66-3.5-5.06.27-2.4 2.37-4.15 4.85-3.86v2.5c-.3-.05-.62-.09-.94-.06-1.12.11-1.98.98-1.93 2.12.05 1.14.94 1.96 2.11 1.9 1.19-.06 2.05-.99 2.05-2.36V3h3.35z" />
+  </svg>
+);
 
 const SERVICES = [
   "Remates Bancarios",
@@ -50,9 +55,10 @@ export function Footer() {
             </p>
             <div className="mt-6 flex gap-3">
               {[
-                { Icon: Linkedin, href: SITE.social.linkedin, label: "LinkedIn" },
+                { Icon: Tiktok, href: SITE.social.tiktok, label: "TikTok" },
                 { Icon: Instagram, href: SITE.social.instagram, label: "Instagram" },
                 { Icon: Facebook, href: SITE.social.facebook, label: "Facebook" },
+                { Icon: Linkedin, href: SITE.social.linkedin, label: "LinkedIn" },
                 { Icon: Youtube, href: SITE.social.youtube, label: "YouTube" },
               ].map(({ Icon, href, label }) => (
                 <a
