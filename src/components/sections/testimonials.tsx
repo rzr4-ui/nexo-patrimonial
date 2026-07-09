@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Quote, Star } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
@@ -55,10 +55,24 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function Testimonials() {
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
   const t = TESTIMONIALS[active];
 
+  // Auto-rotación del carrusel (se reinicia al cambiar o al pausar con hover)
+  useEffect(() => {
+    if (paused) return;
+    const id = setTimeout(() => {
+      setActive((a) => (a + 1) % TESTIMONIALS.length);
+    }, 6000);
+    return () => clearTimeout(id);
+  }, [active, paused]);
+
   return (
-    <section className="relative overflow-hidden bg-navy-800 py-24 lg:py-32">
+    <section
+      className="relative overflow-hidden bg-navy-800 py-24 lg:py-32"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       <div className="pointer-events-none absolute right-0 top-1/4 h-80 w-80 rounded-full bg-gold/5 blur-[120px]" />
       <div className="relative mx-auto max-w-7xl px-6 lg:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
