@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  NORUTEC® (Ilaprazol) · App de material de apoyo médico — Chinoin
+  ============================================================================
+  PROTOTIPO DEMO para junta comercial. Plataforma por omnitrademx.
+  Herramienta de detailing: el médico la usa en consulta para mostrar, con
+  ejemplos virtuales, cómo actúa Norutec® (inhibidor de la bomba de protones)
+  y sus beneficios en ERGE, esofagitis erosiva y úlceras.
+
+  Archivo único, sin dependencias ni build. Abre con doble clic.
+
+  ¿DÓNDE AJUSTAR COSAS?  (busca estos comentarios)
+    [CONFIG-COLORES]  → paleta de marca (variables CSS en :root)
+    [CONFIG-LOGO]     → logotipos Norutec / Chinoin / omnitrademx (SVG)
+    [CONFIG-TEXTOS]   → textos de indicaciones y beneficios (arreglos JS)
+  ============================================================================
+-->
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Norutec® · App de apoyo médico — Demo (Chinoin)</title>
+<style>
+  /* ==========================================================================
+     [CONFIG-COLORES] Paleta — Norutec (magenta→azul) + neutros clínicos
+     ========================================================================== */
+  :root{
+    /* Marca Norutec */
+    --nor-magenta:#E6007E;
+    --nor-rosa:#C21C8E;
+    --nor-morado:#8E3C9E;
+    --nor-azul:#2E9BD6;
+    --nor-azul-hondo:#1E7FC2;
+    /* Neutros con leve sesgo frío */
+    --tinta:#1b2440;          /* Texto principal (azul-tinta)   */
+    --gris-texto:#5a6480;
+    --gris-suave:#f4f6fb;
+    --gris-borde:#e4e8f2;
+    --blanco:#ffffff;
+    /* Semánticos */
+    --acido:#e23c5b;          /* Ácido / riesgo (rojo)          */
+    --acido-suave:#fdeaef;
+    --sano:#1fae7a;           /* Salud / control (verde)        */
+    --sano-suave:#e6f7f0;
+    --ambar:#f4a623;
+    /* Logos externos */
+    --chinoin-rojo:#E1251B;
+    --omni-rojo:#E5352B;
+    --omni-azul:#16295C;
+    /* Sistema */
+    --sombra:0 24px 60px rgba(27,36,64,.22);
+    --fuente:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+    --grad-nor:linear-gradient(100deg,var(--nor-magenta) 0%,var(--nor-morado) 52%,var(--nor-azul) 100%);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--fuente);color:var(--tinta);
+    background:
+      radial-gradient(1100px 560px at 15% -10%, #fbe9f4 0%, transparent 55%),
+      radial-gradient(1000px 700px at 100% 110%, #e2f0fb 0%, transparent 55%),
+      linear-gradient(135deg,#f7f9fe 0%,#eef3fb 100%);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:26px 16px 88px;overflow-x:hidden;
+  }
+
+  /* ---- Encabezado externo: proveedor + cliente --------------------------- */
+  header.marca{
+    width:100%;max-width:1100px;display:flex;align-items:center;justify-content:space-between;
+    gap:20px;margin-bottom:20px;flex-wrap:wrap;
+  }
+  .prov{display:flex;align-items:center;gap:11px}
+  .prov .omni{width:38px;height:38px;flex-shrink:0}
+  .prov .txt .n{font-size:18px;font-weight:800;color:var(--omni-azul);letter-spacing:-.4px}
+  .prov .txt .s{font-size:11px;color:var(--gris-texto);font-weight:600}
+  .cobrand{
+    display:flex;align-items:center;gap:12px;padding:8px 16px;border-radius:14px;
+    background:var(--blanco);border:1px solid var(--gris-borde);box-shadow:0 4px 16px rgba(27,36,64,.06);
+  }
+  .cobrand small{font-size:10px;color:#9aa3ba;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px}
+  .cobrand .chinoin-logo{width:116px;height:26px;display:block}
+
+  /* ======================= MOCKUP DE CELULAR ============================== */
+  .telefono{
+    position:relative;width:392px;max-width:94vw;aspect-ratio:392/820;
+    background:#0b1220;border-radius:54px;padding:14px;
+    box-shadow:var(--sombra), inset 0 0 0 2px #202b40;
+  }
+  .telefono::before{content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);
+    width:120px;height:26px;background:#0b1220;border-radius:16px;z-index:40}
+  .pantalla{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;
+    background:var(--blanco);display:flex;flex-direction:column}
+
+  .statusbar{height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 26px;font-size:12.5px;font-weight:700;color:var(--tinta);z-index:15}
+  .statusbar .ic{font-size:10px;letter-spacing:1px}
+
+  /* ------------------------- SPLASH / INGRESO ----------------------------- */
+  #splash{
+    position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;
+    align-items:center;justify-content:space-between;padding:54px 26px 30px;text-align:center;
+    background:var(--grad-nor);color:#fff;
+    transition:opacity .55s ease, visibility .55s;
+  }
+  #splash.oculto{opacity:0;visibility:hidden}
+  #splash .chip{font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+    background:rgba(255,255,255,.22);padding:6px 14px;border-radius:20px}
+  #splash .logo-hero{background:#fff;border-radius:22px;padding:22px 26px;box-shadow:0 18px 40px rgba(0,0,0,.25)}
+  #splash .logo-hero svg{width:200px;height:auto;display:block}
+  #splash h1{font-size:20px;font-weight:800;line-height:1.3;margin-top:2px}
+  #splash p{font-size:13px;opacity:.92;line-height:1.5;margin-top:8px}
+  #splash .rx{font-size:11px;opacity:.85;border:1px solid rgba(255,255,255,.4);border-radius:10px;
+    padding:8px 12px;line-height:1.4}
+  #splash .entrar{
+    width:100%;padding:16px;border:0;border-radius:16px;background:#fff;color:var(--nor-rosa);
+    font-family:inherit;font-weight:800;font-size:16px;cursor:pointer;box-shadow:0 12px 26px rgba(0,0,0,.25);
+    transition:transform .15s}
+  #splash .entrar:active{transform:scale(.97)}
+
+  /* --------------------------- APP BAR ------------------------------------ */
+  .appbar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:6px 18px 12px;border-bottom:1px solid var(--gris-borde)}
+  .appbar .nor{width:104px;height:auto;display:block}
+  .appbar .cli{display:flex;align-items:center;gap:6px;font-size:10px;color:#9aa3ba;font-weight:700}
+  .appbar .cli .chinoin-logo{width:64px;height:15px}
+
+  /* ------------------------- CONTENEDOR DE PANTALLAS ---------------------- */
+  .screens{flex:1;position:relative;overflow:hidden}
+  .screen{position:absolute;inset:0;overflow-y:auto;padding:16px 16px 20px;
+    opacity:0;visibility:hidden;transform:translateY(8px);
+    transition:opacity .35s ease, transform .35s ease, visibility .35s}
+  .screen.activa{opacity:1;visibility:visible;transform:none}
+  .screen::-webkit-scrollbar{width:0}
+
+  .titulo-pantalla{font-size:19px;font-weight:800;letter-spacing:-.3px;margin-bottom:3px}
+  .subt{font-size:12.5px;color:var(--gris-texto);line-height:1.5;margin-bottom:14px}
+
+  /* --------------------------- TAB BAR ------------------------------------ */
+  .tabbar{flex-shrink:0;display:flex;border-top:1px solid var(--gris-borde);background:var(--blanco)}
+  .tabbar button{flex:1;border:0;background:none;font-family:inherit;cursor:pointer;
+    padding:9px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;
+    color:#9aa3ba;font-size:9.5px;font-weight:700;transition:color .2s}
+  .tabbar button svg{width:21px;height:21px;stroke-width:2}
+  .tabbar button.on{color:var(--nor-rosa)}
+
+  /* ----------------------- Tarjetas genéricas ----------------------------- */
+  .card{background:var(--blanco);border:1px solid var(--gris-borde);border-radius:18px;
+    padding:15px;box-shadow:0 6px 18px rgba(27,36,64,.05);margin-bottom:12px}
+  .card h3{font-size:14.5px;font-weight:800;margin-bottom:5px}
+  .card p{font-size:12.5px;color:var(--gris-texto);line-height:1.5}
+
+  /* Tarjetas de acceso en Inicio */
+  .nav-card{display:flex;align-items:center;gap:13px;cursor:pointer;transition:transform .15s, box-shadow .2s}
+  .nav-card:active{transform:scale(.985)}
+  .nav-card .ico{width:44px;height:44px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff}
+  .nav-card .ico svg{width:24px;height:24px}
+  .nav-card .go{margin-left:auto;color:var(--nor-azul);font-size:20px;font-weight:800}
+  .grad-fill{background:var(--grad-nor)}
+
+  .hero-inicio{border-radius:20px;padding:20px;color:#fff;background:var(--grad-nor);margin-bottom:14px;
+    box-shadow:0 14px 30px rgba(198,28,142,.28)}
+  .hero-inicio .k{font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;opacity:.9}
+  .hero-inicio h2{font-size:20px;font-weight:800;margin:6px 0 6px}
+  .hero-inicio p{font-size:12.8px;line-height:1.5;opacity:.95}
+  .hero-inicio .tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:700;
+    background:rgba(255,255,255,.2);padding:5px 11px;border-radius:20px}
+
+  /* ------------------- MECANISMO: canvas + medidores ---------------------- */
+  .lienzo-wrap{position:relative;border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,#241326,#3a1030);box-shadow:inset 0 0 40px rgba(0,0,0,.35)}
+  .lienzo-wrap canvas{display:block;width:100%;height:auto}
+  .ph-hud{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.94);border-radius:13px;
+    padding:8px 11px;text-align:center;min-width:82px;box-shadow:0 8px 20px rgba(0,0,0,.28);
+    border:2px solid var(--acido);transition:border-color .5s}
+  .ph-hud .l{font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:var(--gris-texto);font-weight:800}
+  .ph-hud .v{font-size:26px;font-weight:900;line-height:1;color:var(--acido);transition:color .5s}
+  .ph-hud .e{font-size:9.5px;font-weight:800;margin-top:2px;color:var(--acido);transition:color .5s}
+  .acid-hud{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.94);border-radius:13px;
+    padding:8px 10px;width:96px;box-shadow:0 8px 20px rgba(0,0,0,.28)}
+  .acid-hud .l{font-size:8.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--gris-texto);font-weight:800;margin-bottom:5px}
+  .barra{height:8px;border-radius:6px;background:#eceff6;overflow:hidden}
+  .barra i{display:block;height:100%;width:90%;background:linear-gradient(90deg,#f4a623,var(--acido));
+    transition:width .4s ease, background .4s}
+  .leyenda{display:flex;gap:14px;justify-content:center;margin:10px 0 4px;flex-wrap:wrap}
+  .leyenda span{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gris-texto);font-weight:600}
+  .dot{width:11px;height:11px;border-radius:50%}
+
+  /* Botones de acción */
+  .btn{border:0;cursor:pointer;font-family:inherit;font-weight:800;border-radius:14px;
+    transition:transform .15s ease, box-shadow .25s, opacity .2s;-webkit-tap-highlight-color:transparent}
+  .btn:active{transform:scale(.97)}
+  .btn-nor{width:100%;padding:15px;font-size:15px;color:#fff;background:var(--grad-nor);
+    box-shadow:0 12px 26px rgba(198,28,142,.32);display:flex;align-items:center;justify-content:center;gap:9px;margin-top:12px}
+  .btn-nor:disabled{opacity:.5;box-shadow:none;cursor:not-allowed}
+  .btn-nor svg{width:20px;height:20px}
+  .btn-ghost{width:100%;padding:11px;margin-top:8px;font-size:13px;background:var(--blanco);
+    color:var(--nor-azul);border:1.5px solid var(--gris-borde)}
+  .btn-ghost:hover{border-color:var(--nor-azul);background:#f3faff}
+
+  .aviso-ok{display:flex;gap:9px;align-items:flex-start;background:var(--sano-suave);
+    border:1px solid #bfe9d8;border-radius:13px;padding:12px 13px;font-size:12.3px;color:#0f7a53;
+    font-weight:600;line-height:1.5;margin-top:12px;max-height:0;opacity:0;overflow:hidden;padding-top:0;padding-bottom:0;
+    transition:max-height .5s, opacity .4s, padding .4s}
+  .aviso-ok.show{max-height:160px;opacity:1;padding-top:12px;padding-bottom:12px}
+  .aviso-ok svg{width:19px;height:19px;flex-shrink:0;margin-top:1px}
+
+  /* ------------------- INDICACIONES: segmentos + escenas ------------------ */
+  .segmento{display:flex;background:var(--gris-suave);border-radius:13px;padding:4px;gap:4px;margin-bottom:14px}
+  .segmento button{flex:1;border:0;background:none;font-family:inherit;font-weight:700;font-size:11.5px;
+    color:var(--gris-texto);padding:9px 4px;border-radius:10px;cursor:pointer;transition:all .2s;line-height:1.2}
+  .segmento button.on{background:var(--blanco);color:var(--nor-rosa);box-shadow:0 3px 10px rgba(27,36,64,.1)}
+
+  .indic-panel{display:none}
+  .indic-panel.activa{display:block}
+
+  /* Escena anatómica (SVG) */
+  .escena-svg{width:100%;height:auto;display:block;border-radius:16px;background:#0f1830}
+  .escena-box{position:relative;border-radius:16px;overflow:hidden;box-shadow:inset 0 0 30px rgba(0,0,0,.3)}
+  .escena-tag{position:absolute;top:10px;left:10px;background:rgba(15,24,48,.82);color:#fff;
+    font-size:11px;font-weight:800;padding:6px 11px;border-radius:11px;backdrop-filter:blur(3px)}
+
+  /* Toggle Antes / Con Norutec */
+  .toggle-trat{display:flex;background:var(--gris-suave);border-radius:12px;padding:4px;gap:4px;margin:12px 0}
+  .toggle-trat button{flex:1;border:0;background:none;font-family:inherit;font-weight:800;font-size:12px;
+    padding:10px;border-radius:9px;cursor:pointer;color:var(--gris-texto);transition:all .2s}
+  .toggle-trat button.on-antes{background:#fff;color:var(--acido);box-shadow:0 3px 10px rgba(27,36,64,.1)}
+  .toggle-trat button.on-trat{background:var(--grad-nor);color:#fff;box-shadow:0 6px 14px rgba(198,28,142,.3)}
+
+  /* Slider de cicatrización (semanas) */
+  .heal{margin:12px 0 4px}
+  .heal label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--gris-texto)}
+  .heal .semana{float:right;color:var(--nor-rosa);font-weight:800}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:8px;margin-top:10px;
+    background:linear-gradient(90deg,var(--acido) 0%,var(--ambar) 45%,var(--sano) 100%);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+    background:#fff;border:4px solid var(--nor-rosa);box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:grab}
+  input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;
+    border:4px solid var(--nor-rosa);box-shadow:0 3px 10px rgba(0,0,0,.25)}
+
+  .edu-linea{background:var(--blanco);border-left:4px solid var(--nor-azul);border-radius:12px;
+    padding:12px 14px;font-size:12.5px;color:var(--gris-texto);line-height:1.5;margin-top:12px;
+    box-shadow:0 4px 14px rgba(27,36,64,.05)}
+  .edu-linea b{color:var(--tinta)}
+
+  /* Timeline 24 h (ERGE) */
+  .reloj24{margin-top:12px}
+  .reloj24 .cab{display:flex;justify-content:space-between;font-size:10.5px;color:var(--gris-texto);font-weight:700;margin-bottom:5px}
+  .reloj24 .track{position:relative;height:34px;border-radius:10px;background:var(--gris-suave);overflow:hidden}
+  .reloj24 .fill{position:absolute;inset:0;width:100%;background:linear-gradient(90deg,var(--sano),#37c496);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;
+    transform:scaleX(1);transform-origin:left;transition:transform .6s ease, background .4s}
+  .reloj24 .marcas{display:flex;justify-content:space-between;font-size:9px;color:#9aa3ba;margin-top:3px}
+
+  /* --------------------------- BENEFICIOS --------------------------------- */
+  .benef{display:flex;gap:12px;align-items:flex-start;background:var(--blanco);border:1px solid var(--gris-borde);
+    border-radius:16px;padding:14px;margin-bottom:11px;box-shadow:0 5px 16px rgba(27,36,64,.05)}
+  .benef .ico{width:40px;height:40px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    color:#fff;background:var(--grad-nor)}
+  .benef .ico svg{width:22px;height:22px}
+  .benef h4{font-size:13.5px;font-weight:800;margin-bottom:3px}
+  .benef p{font-size:12px;color:var(--gris-texto);line-height:1.45}
+
+  /* Cierre dentro de la app */
+  .cierre-app{text-align:center;padding:16px 8px 6px;border-top:1px dashed var(--gris-borde);margin-top:6px}
+  .cierre-app .prov-min{display:flex;align-items:center;justify-content:center;gap:7px;color:#9aa3ba;font-size:10.5px;font-weight:700}
+  .cierre-app .prov-min svg{width:18px;height:18px}
+  .cierre-app .legal{font-size:9.5px;color:#b3bacb;margin-top:5px;line-height:1.4}
+
+  /* ------------------------- Banner + footer ------------------------------ */
+  .banner-demo{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(27,36,64,.95);
+    color:#dbe2f2;font-size:11.5px;font-weight:600;text-align:center;padding:9px 14px;backdrop-filter:blur(6px)}
+  .banner-demo b{color:#fff;letter-spacing:1px}
+
+  footer.cierre{width:100%;max-width:1100px;margin-top:24px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:7px}
+  footer .lin{display:flex;align-items:center;gap:9px}
+  footer .lin .omni{width:30px;height:30px}
+  footer .lin .nombre{font-size:18px;font-weight:800;color:var(--omni-azul)}
+  footer .colab{display:flex;align-items:center;gap:8px;margin-top:2px}
+  footer .colab span{font-size:10.5px;color:#9aa3ba;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+  footer .colab .chinoin-logo{width:92px;height:22px}
+  footer .legal{font-size:11px;color:#9aa3ba;margin-top:2px}
+
+  @media (min-width:900px){ .telefono{width:400px} }
+</style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       [CONFIG-LOGO] LOGOTIPOS REUTILIZABLES (<symbol> + gradientes)
+       ========================================================================== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="gNor" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#E6007E"/><stop offset=".5" stop-color="#8E3C9E"/><stop offset="1" stop-color="#2E9BD6"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Logotipo NORUTEC® + tag Ilaprazol (recreación del wordmark) -->
+    <symbol id="norutecLogo" viewBox="0 0 250 74">
+      <!-- Acento de listón sobre el asta izquierda de la N (sin tapar la letra) -->
+      <path d="M3 8 L13 8 L30 44 L20 44 Z" fill="#E6007E" opacity=".9"/>
+      <text x="0" y="46" font-family="Arial Black, Arial, sans-serif" font-weight="900"
+            font-size="42" letter-spacing="-1.5" fill="url(#gNor)">NORUTEC</text>
+      <text x="228" y="20" font-family="Arial, sans-serif" font-size="13" fill="#2E9BD6">®</text>
+      <rect x="150" y="52" rx="9" ry="9" width="80" height="19" fill="#2E9BD6"/>
+      <text x="190" y="65.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700"
+            font-size="12.5" fill="#fff">Ilaprazol</text>
+    </symbol>
+
+    <!-- Isotipo omnitrademx -->
+    <symbol id="omniMark" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="24" fill="none" stroke="var(--omni-rojo)" stroke-width="8"/>
+      <path d="M9.6 39.8 A24 24 0 0 0 55.2 34.6" fill="none" stroke="var(--omni-azul)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M19 43 C20 29 29 23 43 24" fill="none" stroke="var(--omni-rojo)" stroke-width="6.5" stroke-linecap="round"/>
+      <path d="M35.5 17 L48 22 L41.5 33.5 Z" fill="var(--omni-rojo)"/>
+    </symbol>
+
+    <!-- Logotipo Chinoin -->
+    <symbol id="chinoinLogo" viewBox="0 0 152 44">
+      <text x="0" y="33" font-family="Arial Black, Arial, sans-serif" font-weight="900"
+            font-size="34" letter-spacing="-1" fill="var(--chinoin-rojo)">CHINOIN</text>
+      <text x="138" y="15" font-family="Arial, sans-serif" font-size="11" fill="var(--chinoin-rojo)">®</text>
+    </symbol>
+  </svg>
+
+  <!-- ================= ENCABEZADO EXTERNO (proveedor + cliente) ============ -->
+  <header class="marca">
+    <div class="prov">
+      <svg class="omni" viewBox="0 0 64 64" aria-label="omnitrademx"><use href="#omniMark"/></svg>
+      <div class="txt">
+        <div class="n">omnitrademx</div>
+        <div class="s">Plataforma de apoyo médico</div>
+      </div>
+    </div>
+    <div class="cobrand">
+      <div>
+        <small>Producto de</small>
+        <svg class="chinoin-logo" viewBox="0 0 152 44" role="img" aria-label="Chinoin"><use href="#chinoinLogo"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================ APP (mockup) ============================= -->
+  <div class="telefono">
+    <div class="pantalla">
+      <div class="statusbar"><span>9:41</span><span class="ic">▮▮▮ 📶 🔋</span></div>
+
+      <!-- ---------------------- SPLASH / INGRESO ---------------------------- -->
+      <section id="splash">
+        <span class="chip">Material de apoyo médico</span>
+        <div class="logo-hero">
+          <svg viewBox="0 0 250 74" role="img" aria-label="Norutec Ilaprazol"><use href="#norutecLogo"/></svg>
+        </div>
+        <div>
+          <h1>Demostrador clínico interactivo</h1>
+          <p>Explique a su paciente, con ejemplos virtuales, cómo actúa Norutec® y por qué el apego al tratamiento marca la diferencia.</p>
+        </div>
+        <div class="rx">℞ Para uso exclusivo del profesional de la salud.</div>
+        <button class="entrar" id="btnIngresar">Ingresar a la demostración</button>
+      </section>
+
+      <!-- ---------------------------- APP BAR ------------------------------- -->
+      <div class="appbar">
+        <svg class="nor" viewBox="0 0 250 74" aria-label="Norutec"><use href="#norutecLogo"/></svg>
+        <div class="cli">Producto de
+          <svg class="chinoin-logo" viewBox="0 0 152 44" aria-label="Chinoin"><use href="#chinoinLogo"/></svg>
+        </div>
+      </div>
+
+      <!-- ---------------------- CONTENEDOR DE PANTALLAS --------------------- -->
+      <div class="screens">
+
+        <!-- ====================== PANTALLA: INICIO ======================== -->
+        <section class="screen activa" id="scr-inicio">
+          <div class="hero-inicio">
+            <div class="k">Norutec® · Ilaprazol</div>
+            <h2>IBP de última generación</h2>
+            <p>Inhibidor de la bomba de protones que disminuye drásticamente la producción de ácido gástrico, con control de síntomas hasta por 24 horas.</p>
+            <span class="tag">Inhibidor de la bomba de protones (IBP)</span>
+          </div>
+
+          <div class="card nav-card" data-goto="mecanismo">
+            <div class="ico grad-fill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M5 8l3 2M19 8l-3 2M6 14a6 6 0 0 0 12 0v-2H6z"/><path d="M9 22h6"/></svg>
+            </div>
+            <div><h3>Mecanismo de acción</h3><p>Cómo bloquea la bomba de protones</p></div>
+            <div class="go">›</div>
+          </div>
+
+          <div class="card nav-card" data-goto="indicaciones">
+            <div class="ico grad-fill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+            </div>
+            <div><h3>Indicaciones</h3><p>ERGE · Esofagitis · Úlceras</p></div>
+            <div class="go">›</div>
+          </div>
+
+          <div class="card nav-card" data-goto="beneficios">
+            <div class="ico grad-fill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 .8-4.5 4.3 1.2 6.4L12 17l-5.9 2.5 1.2-6.4L3 8.8 9 8z"/></svg>
+            </div>
+            <div><h3>Beneficios</h3><p>Por qué elegir Norutec®</p></div>
+            <div class="go">›</div>
+          </div>
+
+          <div class="cierre-app">
+            <div class="prov-min"><svg viewBox="0 0 64 64"><use href="#omniMark"/></svg> Plataforma por omnitrademx</div>
+            <div class="legal">Contenido educativo con fines demostrativos. No sustituye la Información Para Prescribir. Consulte el IPP completo.</div>
+          </div>
+        </section>
+
+        <!-- ==================== PANTALLA: MECANISMO ====================== -->
+        <section class="screen" id="scr-mecanismo">
+          <div class="titulo-pantalla">Mecanismo de acción</div>
+          <p class="subt">Las <b>bombas de protones</b> de las células gástricas liberan ácido (H⁺) al estómago. Norutec® (ilaprazol) las <b>bloquea</b>, disminuyendo el ácido y elevando el pH.</p>
+
+          <div class="lienzo-wrap">
+            <canvas id="cvMec" width="700" height="430"></canvas>
+            <div class="ph-hud">
+              <div class="l">pH gástrico</div>
+              <div class="v" id="phVal">1.5</div>
+              <div class="e" id="phEst">Muy ácido</div>
+            </div>
+            <div class="acid-hud">
+              <div class="l">Ácido (H⁺)</div>
+              <div class="barra"><i id="acidBar"></i></div>
+              <div class="l" style="margin-top:7px;margin-bottom:5px">Bombas activas</div>
+              <div class="barra"><i id="pumpBar" style="background:linear-gradient(90deg,#8E3C9E,#2E9BD6)"></i></div>
+            </div>
+          </div>
+
+          <div class="leyenda">
+            <span><i class="dot" style="background:#ff5a6e"></i> Ácido (H⁺)</span>
+            <span><i class="dot" style="background:#8E3C9E"></i> Bomba activa</span>
+            <span><i class="dot" style="background:#7d8aa5"></i> Bomba bloqueada</span>
+          </div>
+
+          <button class="btn btn-nor" id="btnAdmin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5 3.5 13.5a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7z"/><path d="M8 8l8 8"/></svg>
+            Administrar Norutec®
+          </button>
+          <button class="btn btn-ghost" id="btnResetMec">↺ Reiniciar</button>
+
+          <div class="aviso-ok" id="avisoMec">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0f7a53" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>Al bloquear las bombas, el ácido disminuye y el <b>pH sube a un rango que alivia y protege</b> la mucosa. Un solo bloqueo mantiene el efecto de forma prolongada.</span>
+          </div>
+        </section>
+
+        <!-- =================== PANTALLA: INDICACIONES ==================== -->
+        <section class="screen" id="scr-indicaciones">
+          <div class="titulo-pantalla">Indicaciones</div>
+          <p class="subt">Seleccione un caso para ver el ejemplo virtual.</p>
+
+          <div class="segmento" id="segIndic">
+            <button class="on" data-ind="erge">ERGE<br>Reflujo</button>
+            <button data-ind="esofagitis">Esofagitis<br>erosiva</button>
+            <button data-ind="ulcera">Úlceras</button>
+          </div>
+
+          <!-- ---- ERGE ---- -->
+          <div class="indic-panel activa" id="ind-erge">
+            <div class="escena-box">
+              <span class="escena-tag" id="ergeTag">Antes del tratamiento</span>
+              <svg class="escena-svg" viewBox="0 0 320 240" id="svgErge">
+                <!-- esófago -->
+                <rect x="128" y="4" width="64" height="120" rx="10" fill="#3a1730"/>
+                <rect x="134" y="4" width="52" height="120" rx="8" fill="#6b2447" id="ergeEsofPared"/>
+                <!-- zona de ardor (esófago) -->
+                <ellipse id="ergeArdor" cx="160" cy="52" rx="30" ry="24" fill="#ff5a3c" opacity="0"/>
+                <!-- estómago -->
+                <path d="M110 120 Q100 130 108 160 Q116 210 170 214 Q236 214 232 160 Q230 132 210 122 Z" fill="#7a2a52"/>
+                <path d="M120 128 Q112 136 120 160 Q128 200 170 204 Q222 202 220 160 Q218 138 202 130 Z" fill="#a23a6e" id="ergeEstMucosa"/>
+                <!-- esfínter (LES) -->
+                <rect x="130" y="116" width="60" height="12" rx="6" fill="#4d1c38" id="ergeLES"/>
+                <!-- gotas de ácido (suben en reflujo) -->
+                <g id="ergeGotas" fill="#ff5a6e"></g>
+              </svg>
+            </div>
+
+            <div class="toggle-trat" data-target="erge">
+              <button class="on-antes" data-trat="antes">Antes</button>
+              <button data-trat="trat">Con Norutec®</button>
+            </div>
+
+            <div class="reloj24">
+              <div class="cab"><span>Control de síntomas</span><span id="ergeHoras">Sin control</span></div>
+              <div class="track"><div class="fill" id="ergeFill" style="transform:scaleX(.12);background:linear-gradient(90deg,#f4a623,#e23c5b)">0 h</div></div>
+              <div class="marcas"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>24 h</span></div>
+            </div>
+
+            <div class="edu-linea" id="ergeEdu"><b>Reflujo gastroesofágico:</b> el ácido sube al esófago y causa agruras y ardor. Norutec® reduce el ácido y controla los síntomas <b>hasta por 24 horas</b>.</div>
+          </div>
+
+          <!-- ---- ESOFAGITIS ---- -->
+          <div class="indic-panel" id="ind-esofagitis">
+            <div class="escena-box">
+              <span class="escena-tag">Mucosa esofágica</span>
+              <svg class="escena-svg" viewBox="0 0 320 240" id="svgEso">
+                <defs>
+                  <linearGradient id="gEsoPared" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#f4b8c8"/><stop offset="1" stop-color="#e88aa5"/>
+                  </linearGradient>
+                </defs>
+                <!-- pared del esófago (vista interior) -->
+                <rect x="20" y="20" width="280" height="200" rx="20" fill="url(#gEsoPared)"/>
+                <rect x="40" y="40" width="240" height="160" rx="16" fill="#f7cdd8"/>
+                <!-- lesiones erosivas (se cicatrizan con el slider) -->
+                <g id="esoLesiones" fill="#c22a3f">
+                  <ellipse cx="110" cy="95" rx="26" ry="15"/>
+                  <ellipse cx="205" cy="130" rx="30" ry="17"/>
+                  <ellipse cx="150" cy="170" rx="20" ry="12"/>
+                  <ellipse cx="235" cy="80" rx="16" ry="10"/>
+                </g>
+                <!-- brillo de tejido sano que aparece al cicatrizar -->
+                <g id="esoSano" fill="#fbe0e7" opacity="0">
+                  <ellipse cx="110" cy="95" rx="26" ry="15"/>
+                  <ellipse cx="205" cy="130" rx="30" ry="17"/>
+                  <ellipse cx="150" cy="170" rx="20" ry="12"/>
+                  <ellipse cx="235" cy="80" rx="16" ry="10"/>
+                </g>
+              </svg>
+            </div>
+
+            <div class="heal">
+              <label>Cicatrización <span class="semana" id="esoSem">Semana 0</span></label>
+              <input type="range" id="esoSlider" min="0" max="100" value="0" step="1" />
+            </div>
+            <div class="edu-linea" id="esoEdu"><b>Esofagitis erosiva:</b> el ácido lesiona e inflama el esófago. Al mantener el pH elevado, Norutec® permite que las erosiones <b>cicatricen y desinflamen</b>.</div>
+          </div>
+
+          <!-- ---- ÚLCERA ---- -->
+          <div class="indic-panel" id="ind-ulcera">
+            <div class="escena-box">
+              <span class="escena-tag">Mucosa gástrica / duodenal</span>
+              <svg class="escena-svg" viewBox="0 0 320 240" id="svgUlc">
+                <defs>
+                  <radialGradient id="gCrater" cx="50%" cy="45%" r="60%">
+                    <stop offset="0" stop-color="#7a1420"/><stop offset="1" stop-color="#b22a3a"/>
+                  </radialGradient>
+                </defs>
+                <!-- capas de la pared -->
+                <rect x="20" y="24" width="280" height="60" fill="#e79ab0"/>
+                <rect x="20" y="84" width="280" height="46" fill="#d98aa2"/>
+                <rect x="20" y="130" width="280" height="86" rx="0" fill="#c77a92"/>
+                <!-- cráter de la úlcera -->
+                <g id="ulcCrater">
+                  <ellipse cx="160" cy="70" rx="70" ry="26" fill="#a52436"/>
+                  <path d="M100 70 Q120 150 160 150 Q200 150 220 70 Z" fill="url(#gCrater)"/>
+                  <ellipse cx="160" cy="70" rx="70" ry="24" fill="none" stroke="#7a1420" stroke-width="3"/>
+                </g>
+                <!-- tejido sano que rellena el cráter -->
+                <ellipse id="ulcSano" cx="160" cy="70" rx="66" ry="22" fill="#e79ab0" opacity="0"/>
+              </svg>
+            </div>
+
+            <div class="heal">
+              <label>Curación de la úlcera <span class="semana" id="ulcSem">Semana 0</span></label>
+              <input type="range" id="ulcSlider" min="0" max="100" value="0" step="1" />
+            </div>
+            <div class="edu-linea"><b>Úlcera gástrica y duodenal:</b> la llaga en la pared expone el tejido al ácido. Norutec® favorece la <b>curación</b> al frenar la secreción ácida sostenidamente.</div>
+          </div>
+        </section>
+
+        <!-- ==================== PANTALLA: BENEFICIOS ===================== -->
+        <section class="screen" id="scr-beneficios">
+          <div class="titulo-pantalla">Beneficios de Norutec®</div>
+          <p class="subt">Mensajes clave para reforzar el apego al tratamiento.</p>
+
+          <div class="reloj24" style="margin-bottom:14px">
+            <div class="cab"><span>Alivio sostenido</span><span style="color:var(--sano)">Hasta 24 h</span></div>
+            <div class="track"><div class="fill" style="transform:scaleX(1)">Control del ácido 24 h</div></div>
+          </div>
+
+          <div id="listaBenef"></div>
+
+          <div class="cierre-app">
+            <div class="prov-min"><svg viewBox="0 0 64 64"><use href="#omniMark"/></svg> Plataforma por omnitrademx · para Chinoin</div>
+            <div class="legal">Material demostrativo para profesionales de la salud. No sustituye la Información Para Prescribir.</div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ---------------------------- TAB BAR ------------------------------ -->
+      <nav class="tabbar" id="tabbar">
+        <button class="on" data-tab="inicio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Inicio</button>
+        <button data-tab="mecanismo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M6 14a6 6 0 0 0 12 0v-2H6z"/><path d="M9 22h6"/></svg>Mecanismo</button>
+        <button data-tab="indicaciones">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Indicaciones</button>
+        <button data-tab="beneficios">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 .8-4.5 4.3 1.2 6.4L12 17l-5.9 2.5 1.2-6.4L3 8.8 9 8z"/></svg>Beneficios</button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Banner discreto -->
+  <div class="banner-demo"><b>DEMO CONCEPTUAL</b> — prototipo de material de apoyo médico; la versión final requiere desarrollo de producción.</div>
+
+  <!-- Footer -->
+  <footer class="cierre">
+    <div class="lin">
+      <svg class="omni" viewBox="0 0 64 64" aria-hidden="true"><use href="#omniMark"/></svg>
+      <span class="nombre">omnitrademx</span>
+    </div>
+    <div class="colab"><span>Desarrollado para</span>
+      <svg class="chinoin-logo" viewBox="0 0 152 44" aria-label="Chinoin"><use href="#chinoinLogo"/></svg>
+    </div>
+    <div class="legal">Norutec® es una marca de Chinoin. Prototipo demostrativo, contenido ilustrativo.</div>
+  </footer>
+
+<script>
+/* ==========================================================================
+   NAVEGACIÓN DE LA APP (splash → tabs → pantallas)
+   ========================================================================== */
+const $ = (id)=>document.getElementById(id);
+const $$ = (sel)=>document.querySelectorAll(sel);
+
+// Ingreso desde el splash
+$('btnIngresar').addEventListener('click', ()=> $('splash').classList.add('oculto'));
+
+// Cambio de pantalla por tab o por tarjeta de inicio
+function irAPantalla(nombre){
+  $$('.screen').forEach(s=> s.classList.remove('activa'));
+  $('scr-'+nombre).classList.add('activa');
+  $$('#tabbar button').forEach(b=> b.classList.toggle('on', b.dataset.tab===nombre));
+  $('scr-'+nombre).scrollTop = 0;
+}
+$$('#tabbar button').forEach(b=> b.addEventListener('click', ()=> irAPantalla(b.dataset.tab)));
+$$('.nav-card').forEach(c=> c.addEventListener('click', ()=> irAPantalla(c.dataset.goto)));
+
+/* ==========================================================================
+   MECANISMO DE ACCIÓN — animación en Canvas
+   Bombas de protones liberan H⁺; Norutec® las bloquea → baja el ácido, sube pH.
+   ========================================================================== */
+const cv = $('cvMec'), cx = cv.getContext('2d');
+const MW = cv.width, MH = cv.height;
+const yPared = MH*0.62;               // línea de la pared gástrica
+
+let bombas = [];                      // bombas de protones en la pared
+let protones = [];                    // partículas de ácido H⁺
+let farmacos = [];                    // moléculas de ilaprazol
+let tratado = false;
+let phMostrado = 1.5;                 // pH interpolado que se muestra
+
+/* Crea las bombas distribuidas a lo largo de la pared */
+function initMecanismo(){
+  bombas = [];
+  const n = 6;
+  for(let i=0;i<n;i++){
+    bombas.push({
+      x: MW*(0.12 + i*0.152),
+      y: yPared,
+      bloqueada:false,
+      t: Math.random()*60            // desfase para que no emitan a la vez
+    });
+  }
+  protones = []; farmacos = []; tratado = false; phMostrado = 1.5;
+}
+
+/* Emite un protón (H⁺) desde una bomba activa */
+function emitirProton(b){
+  protones.push({
+    x: b.x + (Math.random()*14-7),
+    y: b.y - 12,
+    vx: (Math.random()*2-1)*0.5,
+    vy: -(0.7 + Math.random()*0.9),
+    r: 4 + Math.random()*2,
+    vida: 1
+  });
+}
+
+/* Administrar Norutec®: lanza fármacos que van a bloquear las bombas */
+function administrar(){
+  if(tratado) return;
+  tratado = true;
+  $('btnAdmin').disabled = true;
+  $('avisoMec').classList.add('show');
+  // un fármaco por cada bomba activa, escalonados
+  const activas = bombas.filter(b=>!b.bloqueada);
+  activas.forEach((b, i)=>{
+    setTimeout(()=>{
+      farmacos.push({
+        x: MW*(0.2 + Math.random()*0.6),
+        y: -10,
+        objetivo: b,
+        docked:false
+      });
+    }, 250*i);
+  });
+}
+
+function dibujarBomba(b){
+  // base embebida en la pared
+  cx.fillStyle = b.bloqueada ? '#7d8aa5' : '#8E3C9E';
+  cx.strokeStyle = b.bloqueada ? '#5a6580' : '#b45bc4';
+  cx.lineWidth = 3;
+  // cuerpo de la bomba (forma de canal)
+  cx.beginPath();
+  cx.roundRect(b.x-14, b.y-18, 28, 30, 8);
+  cx.fill(); cx.stroke();
+  // "boca" superior del canal
+  cx.fillStyle = b.bloqueada ? '#9aa5bd' : '#d17ee0';
+  cx.beginPath(); cx.roundRect(b.x-8, b.y-22, 16, 8, 4); cx.fill();
+  // símbolo de bloqueo
+  if(b.bloqueada){
+    cx.strokeStyle = '#e23c5b'; cx.lineWidth = 3;
+    cx.beginPath(); cx.arc(b.x, b.y-6, 7, 0, Math.PI*2); cx.stroke();
+    cx.beginPath(); cx.moveTo(b.x-5, b.y-11); cx.lineTo(b.x+5, b.y-1); cx.stroke();
+  }
+}
+
+function loopMec(){
+  cx.clearRect(0,0,MW,MH);
+
+  // --- Fondo: lumen (arriba) y pared gástrica (abajo) ---
+  const gLumen = cx.createLinearGradient(0,0,0,yPared);
+  gLumen.addColorStop(0,'#2a1330'); gLumen.addColorStop(1,'#45153a');
+  cx.fillStyle = gLumen; cx.fillRect(0,0,MW,yPared);
+  // pared (células gástricas)
+  const gPared = cx.createLinearGradient(0,yPared,0,MH);
+  gPared.addColorStop(0,'#a23a6e'); gPared.addColorStop(1,'#7a2a52');
+  cx.fillStyle = gPared; cx.fillRect(0,yPared,MW,MH-yPared);
+  // borde mucoso
+  cx.fillStyle = '#c94f86'; cx.fillRect(0,yPared-4,MW,4);
+  // etiqueta lumen
+  cx.fillStyle = 'rgba(255,255,255,.5)'; cx.font = '600 13px Segoe UI, sans-serif';
+  cx.fillText('Luz del estómago', 14, 24);
+  cx.fillText('Células gástricas', 14, MH-14);
+
+  // --- Bombas: emiten protones si están activas ---
+  let activas = 0;
+  for(const b of bombas){
+    if(!b.bloqueada){
+      activas++;
+      b.t += 1;
+      const intervalo = tratado ? 999 : 44;   // tras tratar dejan de emitir pronto
+      if(!tratado && b.t % intervalo < 1) emitirProton(b);
+    }
+    dibujarBomba(b);
+  }
+
+  // --- Fármacos (ilaprazol) viajando a su bomba ---
+  for(const f of farmacos){
+    if(!f.docked){
+      const dx = f.objetivo.x - f.x, dy = (f.objetivo.y-20) - f.y;
+      const d = Math.hypot(dx,dy);
+      if(d < 4){ f.docked = true; f.objetivo.bloqueada = true; }
+      else { f.x += dx/d*3.2; f.y += dy/d*3.2; }
+    }
+    if(!f.docked){
+      // cápsula magenta→azul
+      cx.save(); cx.translate(f.x, f.y);
+      cx.fillStyle = '#E6007E'; cx.beginPath(); cx.roundRect(-9,-5,18,10,5); cx.fill();
+      cx.fillStyle = '#2E9BD6'; cx.beginPath(); cx.roundRect(0,-5,9,10,5); cx.fill();
+      cx.restore();
+    }
+  }
+
+  // --- Protones (H⁺) ---
+  for(let i=protones.length-1;i>=0;i--){
+    const p = protones[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.004;                     // leve gravedad → flotan
+    if(p.y < 40) p.vida -= 0.02;       // se disipan arriba
+    if(tratado) p.vida -= 0.012;       // al tratar, el ácido remanente baja
+    if(p.vida <= 0 || p.y < -10){ protones.splice(i,1); continue; }
+    cx.globalAlpha = Math.max(0, Math.min(1, p.vida));
+    cx.fillStyle = '#ff5a6e';
+    cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, Math.PI*2); cx.fill();
+    // etiqueta H+ en algunos
+    cx.globalAlpha = Math.max(0, Math.min(1, p.vida))*0.9;
+    cx.fillStyle = '#fff'; cx.font = '700 8px Segoe UI';
+    cx.fillText('H⁺', p.x-6, p.y+3);
+  }
+  cx.globalAlpha = 1;
+
+  // --- Cálculo de pH y medidores ---
+  const acidez = protones.length;                    // # de H⁺ visibles
+  const phObjetivo = tratado ? 4.6 : 1.5;
+  phMostrado += (phObjetivo - phMostrado) * 0.03;
+  actualizarMedidores(acidez, activas);
+
+  requestAnimationFrame(loopMec);
+}
+
+function actualizarMedidores(acidez, activas){
+  // pH
+  $('phVal').textContent = phMostrado.toFixed(1);
+  let col, est;
+  if(phMostrado < 2.5){ col='var(--acido)'; est='Muy ácido'; }
+  else if(phMostrado < 3.6){ col='var(--ambar)'; est='Ácido moderado'; }
+  else { col='var(--sano)'; est='Ácido controlado'; }
+  $('phVal').style.color = col; $('phEst').style.color = col; $('phEst').textContent = est;
+  document.querySelector('.ph-hud').style.borderColor = col;
+  // barra de ácido (relativa a un máximo aproximado)
+  const pct = Math.max(4, Math.min(100, acidez*3.2));
+  $('acidBar').style.width = pct+'%';
+  $('acidBar').style.background = tratado
+    ? 'linear-gradient(90deg,#37c496,#1fae7a)'
+    : 'linear-gradient(90deg,#f4a623,#e23c5b)';
+  // barra de bombas activas
+  $('pumpBar').style.width = (activas/bombas.length*100)+'%';
+}
+
+$('btnAdmin').addEventListener('click', administrar);
+$('btnResetMec').addEventListener('click', ()=>{
+  initMecanismo();
+  $('btnAdmin').disabled = false;
+  $('avisoMec').classList.remove('show');
+});
+
+/* ==========================================================================
+   INDICACIONES — segmentos (ERGE / Esofagitis / Úlcera)
+   ========================================================================== */
+$$('#segIndic button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    $$('#segIndic button').forEach(x=> x.classList.remove('on'));
+    b.classList.add('on');
+    $$('.indic-panel').forEach(p=> p.classList.remove('activa'));
+    $('ind-'+b.dataset.ind).classList.add('activa');
+  });
+});
+
+/* ---- ERGE: reflujo de ácido + control 24 h ---- */
+const ergeGotas = $('ergeGotas');
+let ergeTratado = false;
+// crea gotas de ácido dentro del SVG
+const gotasArr = [];
+for(let i=0;i<7;i++){
+  const el = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  el.setAttribute('r', 3.2 + Math.random()*2);
+  ergeGotas.appendChild(el);
+  gotasArr.push({ el, x:140+Math.random()*40, y:120+Math.random()*80, v:0.4+Math.random()*0.5, base:Math.random()*100 });
+}
+let ergeT = 0;
+function loopErge(){
+  ergeT += 1;
+  gotasArr.forEach((g,i)=>{
+    // en "antes" suben hacia el esófago; "con tratamiento" apenas se mueven
+    const alcance = ergeTratado ? 118 : 40;   // hasta dónde suben (y menor = más arriba)
+    g.y -= g.v * (ergeTratado ? 0.25 : 1);
+    if(g.y < alcance){ g.y = 120 + Math.random()*70; }
+    g.el.setAttribute('cx', g.x + Math.sin((ergeT+g.base)/20)*4);
+    g.el.setAttribute('cy', g.y);
+    g.el.setAttribute('opacity', ergeTratado ? 0.35 : 0.95);
+  });
+  requestAnimationFrame(loopErge);
+}
+function setErge(trat){
+  ergeTratado = trat;
+  const tog = document.querySelector('.toggle-trat[data-target="erge"]');
+  tog.querySelector('[data-trat="antes"]').classList.toggle('on-antes', !trat);
+  tog.querySelector('[data-trat="trat"]').classList.toggle('on-trat', trat);
+  // ardor esofágico
+  $('ergeArdor').setAttribute('opacity', trat ? 0 : 0.55);
+  $('ergeTag').textContent = trat ? 'Con Norutec® · ácido controlado' : 'Antes del tratamiento';
+  // reloj 24 h
+  const fill = $('ergeFill');
+  if(trat){
+    fill.style.transform = 'scaleX(1)';
+    fill.style.background = 'linear-gradient(90deg,#1fae7a,#37c496)';
+    fill.textContent = 'Síntomas controlados 24 h';
+    $('ergeHoras').textContent = 'Hasta 24 h';
+    $('ergeHoras').style.color = 'var(--sano)';
+  } else {
+    fill.style.transform = 'scaleX(.12)';
+    fill.style.background = 'linear-gradient(90deg,#f4a623,#e23c5b)';
+    fill.textContent = '';
+    $('ergeHoras').textContent = 'Sin control';
+    $('ergeHoras').style.color = 'var(--acido)';
+  }
+}
+document.querySelector('.toggle-trat[data-target="erge"]').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  setErge(btn.dataset.trat==='trat');
+});
+
+/* ---- ESOFAGITIS: cicatrización por semanas (slider) ---- */
+function actualizarEso(v){
+  const heal = v/100;                          // 0..1
+  const semana = Math.round(heal*8);
+  $('esoSem').textContent = 'Semana ' + semana;
+  // lesiones rojas se desvanecen y encogen; tejido sano aparece
+  $('esoLesiones').style.opacity = (1-heal);
+  $('esoLesiones').style.transform = `scale(${1-0.35*heal})`;
+  $('esoLesiones').style.transformOrigin = 'center';
+  $('esoSano').style.opacity = heal;
+}
+$('esoSlider').addEventListener('input', e=> actualizarEso(+e.target.value));
+
+/* ---- ÚLCERA: curación del cráter (slider) ---- */
+function actualizarUlc(v){
+  const heal = v/100;
+  const semana = Math.round(heal*8);
+  $('ulcSem').textContent = 'Semana ' + semana;
+  // el tejido sano rellena el cráter
+  $('ulcSano').style.opacity = heal;
+  $('ulcSano').setAttribute('ry', 6 + 16*heal);
+  $('ulcCrater').style.opacity = (1-0.85*heal);
+}
+$('ulcSlider').addEventListener('input', e=> actualizarUlc(+e.target.value));
+
+/* ==========================================================================
+   [CONFIG-TEXTOS] BENEFICIOS — edita libremente este arreglo
+   ========================================================================== */
+const BENEFICIOS = [
+  { t:'Control hasta 24 horas', d:'Alivio sostenido de agruras, ardor y regurgitación con una sola toma al día.' },
+  { t:'Cicatrización de lesiones', d:'Favorece la curación de esofagitis erosiva y de úlceras gástricas y duodenales.' },
+  { t:'Inhibición potente y prolongada', d:'Bloqueo de la bomba de protones que mantiene el pH elevado por más tiempo.' },
+  { t:'Mejor apego = mejor resultado', d:'Un esquema simple ayuda al paciente a no suspender el tratamiento antes de tiempo.' },
+];
+const iconoBenef = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+$('listaBenef').innerHTML = BENEFICIOS.map(b=>`
+  <div class="benef">
+    <div class="ico">${iconoBenef}</div>
+    <div><h4>${b.t}</h4><p>${b.d}</p></div>
+  </div>`).join('');
+
+/* ==========================================================================
+   ARRANQUE
+   ========================================================================== */
+initMecanismo();
+requestAnimationFrame(loopMec);
+requestAnimationFrame(loopErge);
+setErge(false);
+actualizarEso(0);
+actualizarUlc(0);
+</script>
+</body>
+</html>

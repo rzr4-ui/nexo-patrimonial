@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  CHINOIN CONECTA · Línea de productos con sensor NFC — Demo
+  ============================================================================
+  PROTOTIPO DEMO para junta comercial. Plataforma por omnitrademx.
+  Historia: el médico ACERCA su celular al sensor NFC del empaque -> es
+  enviado a DESCARGAR la app "Chinoin Conecta" -> desde ahí da SEGUIMIENTO
+  al paciente (adherencia, recordatorios, evolución de síntomas).
+
+  Archivo único, sin dependencias ni build. Abre con doble clic.
+
+  ¿DÓNDE AJUSTAR COSAS?  (busca estos comentarios)
+    [CONFIG-COLORES]  → paleta (variables CSS en :root)
+    [CONFIG-LOGO]     → logotipos Chinoin / omnitrademx / producto
+    [CONFIG-TEXTOS]   → textos de pantallas y datos del seguimiento
+  ============================================================================
+-->
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chinoin Conecta · Línea NFC — Demo</title>
+<style>
+  /* ==========================================================================
+     [CONFIG-COLORES] Paleta — azul clínico + cian NFC + rojo Chinoin
+     ========================================================================== */
+  :root{
+    --azul:#1b4fd0;             /* Azul principal (app Chinoin Conecta) */
+    --azul-hondo:#12357f;
+    --azul-suave:#eaf1fe;
+    --cian:#12b7e0;            /* Acento tecnológico            */
+    --nfc:#25d6e8;             /* Ondas NFC                     */
+    --tinta:#141d33;
+    --gris-texto:#5a6480;
+    --gris-suave:#f3f6fc;
+    --gris-borde:#e3e8f2;
+    --blanco:#ffffff;
+    --verde:#1fae7a;
+    --verde-suave:#e6f7f0;
+    --ambar:#f4a623;
+    --rojo:#e23c5b;
+    /* Marca producto (Norutec, magenta->azul) para el empaque */
+    --nor-magenta:#E6007E;
+    --nor-azul:#2E9BD6;
+    /* Logos externos */
+    --chinoin-rojo:#E1251B;
+    --omni-rojo:#E5352B;
+    --omni-azul:#16295C;
+    --sombra:0 24px 60px rgba(20,29,51,.22);
+    --fuente:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+    --grad-azul:linear-gradient(135deg,var(--azul) 0%,var(--azul-hondo) 100%);
+    --grad-nfc:linear-gradient(135deg,var(--cian),var(--azul));
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--fuente);color:var(--tinta);
+    background:
+      radial-gradient(1100px 560px at 12% -10%, #e5f6fb 0%, transparent 55%),
+      radial-gradient(1000px 700px at 100% 110%, #e6edfb 0%, transparent 55%),
+      linear-gradient(135deg,#f6f9fe 0%,#eef3fb 100%);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:24px 16px 84px;overflow-x:hidden;
+  }
+
+  /* ---- Encabezado externo ------------------------------------------------ */
+  header.marca{width:100%;max-width:1080px;display:flex;align-items:center;justify-content:space-between;
+    gap:20px;margin-bottom:14px;flex-wrap:wrap}
+  .prov{display:flex;align-items:center;gap:11px}
+  .prov .omni{width:38px;height:38px;flex-shrink:0}
+  .prov .txt .n{font-size:18px;font-weight:800;color:var(--omni-azul);letter-spacing:-.4px}
+  .prov .txt .s{font-size:11px;color:var(--gris-texto);font-weight:600}
+  .cobrand{display:flex;align-items:center;gap:12px;padding:8px 16px;border-radius:14px;
+    background:var(--blanco);border:1px solid var(--gris-borde);box-shadow:0 4px 16px rgba(20,29,51,.06)}
+  .cobrand small{font-size:10px;color:#9aa3ba;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px}
+  .cobrand .chinoin-logo{width:116px;height:26px;display:block}
+
+  /* ---- Título de la demo ------------------------------------------------- */
+  .demo-titulo{width:100%;max-width:1080px;text-align:center;margin:6px 0 18px}
+  .demo-titulo .k{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;
+    letter-spacing:1.2px;text-transform:uppercase;color:var(--azul);background:var(--azul-suave);
+    padding:6px 14px;border-radius:20px}
+  .demo-titulo h1{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-top:10px}
+  .demo-titulo p{font-size:13.5px;color:var(--gris-texto);margin-top:6px;line-height:1.5;max-width:640px;margin-left:auto;margin-right:auto}
+
+  /* ======================= ESCENA: producto + celular ==================== */
+  .escena{position:relative;width:100%;max-width:1080px;display:flex;align-items:center;
+    justify-content:center;gap:46px;flex-wrap:wrap}
+
+  /* --- Producto físico con sensor NFC --- */
+  .producto{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;
+    transition:transform .5s ease}
+  .caja{position:relative;width:210px;height:270px;border-radius:20px;
+    background:linear-gradient(150deg,var(--nor-magenta) 0%,#8E3C9E 55%,var(--nor-azul) 100%);
+    box-shadow:0 26px 50px rgba(142,60,158,.4);padding:22px 20px;color:#fff;overflow:hidden}
+  .caja .marca-caja{font-size:11px;font-weight:800;letter-spacing:1.5px;opacity:.9}
+  .caja .prod{font-size:30px;font-weight:900;margin-top:26px;letter-spacing:-1px}
+  .caja .sub{font-size:11.5px;opacity:.9;margin-top:4px;line-height:1.4}
+  .caja .rx{position:absolute;left:20px;bottom:18px;font-size:22px;font-weight:900;opacity:.85}
+  .caja .dosis{position:absolute;right:18px;bottom:18px;font-size:12px;font-weight:800;
+    background:rgba(255,255,255,.2);padding:4px 10px;border-radius:10px}
+
+  /* Medallón NFC sobre el empaque */
+  .nfc-chip{position:absolute;top:96px;right:16px;width:56px;height:56px;border-radius:50%;
+    background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.25);z-index:3}
+  .nfc-chip svg{width:34px;height:34px;color:var(--azul)}
+  /* Ondas NFC (se activan al acercar) */
+  .ondas{position:absolute;top:96px;right:16px;width:56px;height:56px;z-index:2;pointer-events:none}
+  .ondas span{position:absolute;top:50%;left:50%;width:56px;height:56px;margin:-28px 0 0 -28px;
+    border:3px solid var(--nfc);border-radius:50%;opacity:0}
+  .escena.acercando .ondas span{animation:onda 1.5s ease-out infinite}
+  .escena.acercando .ondas span:nth-child(2){animation-delay:.5s}
+  .escena.acercando .ondas span:nth-child(3){animation-delay:1s}
+  @keyframes onda{0%{transform:scale(.5);opacity:.85}100%{transform:scale(3.6);opacity:0}}
+
+  .producto .etiqueta-nfc{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;
+    color:var(--azul);background:var(--blanco);border:1px solid var(--gris-borde);padding:7px 13px;border-radius:20px;
+    box-shadow:0 4px 14px rgba(20,29,51,.07)}
+  .producto .etiqueta-nfc svg{width:16px;height:16px}
+
+  /* --- Celular del médico --- */
+  .telefono{position:relative;width:340px;max-width:88vw;aspect-ratio:340/710;
+    background:#0b1220;border-radius:50px;padding:12px;box-shadow:var(--sombra), inset 0 0 0 2px #202b40;
+    transition:transform .5s ease, filter .5s}
+  .telefono::before{content:"";position:absolute;top:18px;left:50%;transform:translateX(-50%);
+    width:110px;height:24px;background:#0b1220;border-radius:16px;z-index:40}
+  .escena.acercando .telefono{transform:translateX(-22px);filter:drop-shadow(0 0 18px rgba(37,214,232,.5))}
+  .pantalla{position:relative;width:100%;height:100%;border-radius:40px;overflow:hidden;background:var(--blanco);display:flex;flex-direction:column}
+  .statusbar{height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px;font-size:12px;font-weight:700;color:var(--tinta);z-index:15}
+  .statusbar.claro{color:#fff}
+  .statusbar .ic{font-size:10px}
+
+  /* Banner de notificación NFC (baja desde arriba) */
+  .nfc-banner{position:absolute;top:8px;left:8px;right:8px;z-index:50;
+    background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border-radius:18px;padding:11px 13px;
+    display:flex;align-items:center;gap:11px;box-shadow:0 10px 30px rgba(0,0,0,.25);cursor:pointer;
+    transform:translateY(-130%);opacity:0;transition:transform .5s cubic-bezier(.2,1.1,.4,1), opacity .4s}
+  .nfc-banner.show{transform:translateY(0);opacity:1}
+  .nfc-banner .ic{width:38px;height:38px;border-radius:11px;background:var(--grad-nfc);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;color:#fff}
+  .nfc-banner .ic svg{width:22px;height:22px}
+  .nfc-banner .tt{font-size:12.5px;font-weight:800;line-height:1.2}
+  .nfc-banner .ds{font-size:11px;color:var(--gris-texto);margin-top:1px}
+  .nfc-banner .flecha{margin-left:auto;color:#c2cadb;font-size:18px;font-weight:800}
+
+  /* ------------------------- Pantallas del teléfono ----------------------- */
+  .screens{flex:1;position:relative;overflow:hidden}
+  .screen{position:absolute;inset:0;overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(10px);
+    transition:opacity .4s ease, transform .4s ease, visibility .4s}
+  .screen.activa{opacity:1;visibility:visible;transform:none}
+  .screen::-webkit-scrollbar{width:0}
+
+  /* Pantalla bloqueo (idle) */
+  #s-lock{background:linear-gradient(160deg,#14357e 0%,#0d2455 60%,#0a1b3f 100%);color:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:30px}
+  #s-lock .hora{font-size:56px;font-weight:300;letter-spacing:-1px}
+  #s-lock .fecha{font-size:13px;opacity:.8;margin-bottom:auto;margin-top:2px}
+  #s-lock .hint{margin-top:auto;font-size:12px;opacity:.8;display:flex;flex-direction:column;align-items:center;gap:8px}
+  #s-lock .hint .glow{width:44px;height:44px;border-radius:50%;background:rgba(37,214,232,.18);
+    display:flex;align-items:center;justify-content:center;color:var(--nfc);animation:pulso 1.8s infinite}
+  #s-lock .hint .glow svg{width:24px;height:24px}
+  @keyframes pulso{0%,100%{box-shadow:0 0 0 0 rgba(37,214,232,.4)}50%{box-shadow:0 0 0 12px rgba(37,214,232,0)}}
+
+  /* Pantalla landing / descarga */
+  #s-landing{padding:20px 18px}
+  .land-top{text-align:center;background:var(--grad-azul);border-radius:20px;padding:22px 18px 20px;color:#fff;
+    box-shadow:0 14px 30px rgba(27,79,208,.3)}
+  .land-top .badge{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+    background:rgba(255,255,255,.2);padding:5px 12px;border-radius:20px}
+  .land-top .app-ico{width:74px;height:74px;border-radius:20px;background:#fff;margin:14px auto 10px;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+  .land-top .app-ico svg{width:44px;height:44px}
+  .land-top h2{font-size:20px;font-weight:800}
+  .land-top p{font-size:12.5px;opacity:.95;margin-top:5px;line-height:1.45}
+  .stores{display:flex;gap:9px;margin-top:14px}
+  .store{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:13px;
+    background:#0b1220;color:#fff;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none}
+  .store svg{width:18px;height:18px}
+  .beneficios-land{margin-top:16px}
+  .bl{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--gris-borde);font-size:12.5px}
+  .bl:last-child{border-bottom:0}
+  .bl .ic{width:34px;height:34px;border-radius:10px;background:var(--azul-suave);color:var(--azul);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .bl .ic svg{width:19px;height:19px}
+  .bl b{display:block;font-weight:800;margin-bottom:1px}
+  .bl span{color:var(--gris-texto)}
+  .linea-prod{margin-top:16px}
+  .linea-prod .cab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--gris-texto);margin-bottom:9px}
+  .linea-prod .fila{display:flex;gap:9px}
+  .lp-card{flex:1;border:1px solid var(--gris-borde);border-radius:14px;padding:11px 9px;text-align:center;position:relative}
+  .lp-card .mini{height:46px;border-radius:9px;margin-bottom:7px;display:flex;align-items:flex-end;justify-content:center;
+    padding-bottom:5px;color:#fff;font-size:11px;font-weight:800}
+  .lp-card .nom{font-size:11px;font-weight:800}
+  .lp-card .cat{font-size:9.5px;color:var(--gris-texto);margin-top:1px}
+  .lp-card .nfc-tag{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;
+    background:var(--azul-suave);color:var(--azul);display:flex;align-items:center;justify-content:center}
+  .lp-card .nfc-tag svg{width:12px;height:12px}
+
+  /* Botones */
+  .btn{border:0;cursor:pointer;font-family:inherit;font-weight:800;border-radius:14px;
+    transition:transform .15s, box-shadow .25s, opacity .2s;-webkit-tap-highlight-color:transparent}
+  .btn:active{transform:scale(.97)}
+  .btn-cta{width:100%;padding:15px;font-size:15px;color:#fff;background:var(--grad-azul);
+    box-shadow:0 12px 26px rgba(27,79,208,.3);display:flex;align-items:center;justify-content:center;gap:9px;margin-top:16px}
+  .btn-cta svg{width:20px;height:20px}
+  .btn-ghost{width:100%;padding:12px;margin-top:9px;font-size:13px;background:var(--blanco);
+    color:var(--azul);border:1.5px solid var(--gris-borde)}
+
+  /* Pantalla onboarding */
+  #s-onboard{padding:22px 20px;display:flex;flex-direction:column}
+  .ob-hd{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+  .ob-hd .app-ico{width:46px;height:46px;border-radius:13px;background:var(--grad-azul);
+    display:flex;align-items:center;justify-content:center;color:#fff}
+  .ob-hd .app-ico svg{width:26px;height:26px}
+  .ob-hd .t b{font-size:16px;font-weight:800;display:block}
+  .ob-hd .t span{font-size:11.5px;color:var(--gris-texto)}
+  .ob-card{background:var(--gris-suave);border-radius:16px;padding:15px;margin-bottom:12px}
+  .ob-card .lbl{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--gris-texto)}
+  .vinc{display:flex;align-items:center;gap:11px;margin-top:9px}
+  .vinc .mini-box{width:40px;height:52px;border-radius:9px;flex-shrink:0;
+    background:linear-gradient(150deg,var(--nor-magenta),var(--nor-azul))}
+  .vinc .info b{font-size:14px;font-weight:800;display:block}
+  .vinc .info span{font-size:11.5px;color:var(--gris-texto)}
+  .vinc .check{margin-left:auto;color:var(--verde)}
+  .vinc .check svg{width:22px;height:22px}
+  .ob-paso{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--gris-texto);margin:9px 2px}
+  .ob-paso .n{width:22px;height:22px;border-radius:50%;background:var(--azul);color:#fff;font-size:11px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+  /* Pantalla seguimiento (dashboard) */
+  #s-segui{padding:18px 16px}
+  .seg-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .seg-hd h2{font-size:18px;font-weight:800}
+  .seg-hd .live{font-size:10px;font-weight:800;color:var(--verde);background:var(--verde-suave);
+    padding:4px 9px;border-radius:20px;display:flex;align-items:center;gap:5px}
+  .seg-hd .live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--verde)}
+  .pac-card{background:var(--grad-azul);border-radius:16px;padding:14px;color:#fff;margin-bottom:12px;
+    display:flex;align-items:center;gap:12px}
+  .pac-card .av{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+  .pac-card b{font-size:14.5px;font-weight:800;display:block}
+  .pac-card span{font-size:11.5px;opacity:.9}
+  .pac-card .via{margin-left:auto;text-align:right;font-size:10px;opacity:.9;line-height:1.3}
+
+  .grid2{display:flex;gap:11px;margin-bottom:12px}
+  .metrica{flex:1;background:var(--blanco);border:1px solid var(--gris-borde);border-radius:15px;padding:13px;text-align:center}
+  .anillo{position:relative;width:92px;height:92px;margin:2px auto 4px}
+  .anillo svg{transform:rotate(-90deg)}
+  .anillo .pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .anillo .pct b{font-size:22px;font-weight:900;color:var(--verde);line-height:1}
+  .anillo .pct span{font-size:8.5px;color:var(--gris-texto);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .metrica .cap{font-size:11px;color:var(--gris-texto);font-weight:700;margin-top:2px}
+  .racha{display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .racha .big{font-size:34px;font-weight:900;color:var(--azul);line-height:1}
+  .racha .u{font-size:11px;color:var(--gris-texto);font-weight:700;margin-top:3px}
+  .racha .fuego{font-size:22px;margin-bottom:2px}
+
+  .bloque{background:var(--blanco);border:1px solid var(--gris-borde);border-radius:15px;padding:13px;margin-bottom:12px}
+  .bloque .th{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .bloque .th b{font-size:12.5px;font-weight:800}
+  .bloque .th span{font-size:10.5px;color:var(--gris-texto);font-weight:700}
+  .dias{display:flex;justify-content:space-between;gap:5px}
+  .dia{flex:1;text-align:center}
+  .dia .marca{height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff}
+  .dia .marca.ok{background:var(--verde)}
+  .dia .marca.no{background:#e6eaf2;color:#b6bccb}
+  .dia .marca svg{width:15px;height:15px}
+  .dia .d{font-size:9px;color:var(--gris-texto);font-weight:700;margin-top:4px}
+
+  /* Mini gráfica de evolución de síntomas (SVG) */
+  .evol{position:relative}
+  .evol svg{width:100%;height:74px;display:block}
+  .evol .leyenda{display:flex;justify-content:space-between;font-size:9.5px;color:#9aa3ba;font-weight:700;margin-top:2px}
+
+  .recordatorio{display:flex;align-items:center;gap:11px;background:var(--azul-suave);border-radius:14px;padding:12px 13px}
+  .recordatorio .ic{width:34px;height:34px;border-radius:10px;background:var(--azul);color:#fff;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .recordatorio .ic svg{width:18px;height:18px}
+  .recordatorio b{font-size:12.5px;font-weight:800;display:block}
+  .recordatorio span{font-size:11px;color:var(--gris-texto)}
+
+  /* ------------------------- Controles de la demo ------------------------- */
+  .controles{width:100%;max-width:1080px;display:flex;gap:10px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+  .ctl{padding:13px 20px;border-radius:14px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;border:0;
+    display:flex;align-items:center;gap:9px;transition:transform .15s, box-shadow .25s}
+  .ctl:active{transform:scale(.97)}
+  .ctl-primario{color:#fff;background:var(--grad-nfc);box-shadow:0 12px 26px rgba(18,183,224,.32)}
+  .ctl-primario:disabled{opacity:.5;cursor:progress;box-shadow:none}
+  .ctl-sec{background:var(--blanco);color:var(--azul);border:1.5px solid var(--gris-borde)}
+  .ctl svg{width:19px;height:19px}
+  .paso-ind{width:100%;text-align:center;font-size:12px;color:var(--gris-texto);font-weight:700;margin-top:4px}
+
+  /* ------------------------- Banner + footer ------------------------------ */
+  .banner-demo{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(20,29,51,.95);
+    color:#dbe2f2;font-size:11.5px;font-weight:600;text-align:center;padding:9px 14px;backdrop-filter:blur(6px)}
+  .banner-demo b{color:#fff;letter-spacing:1px}
+  footer.cierre{width:100%;max-width:1080px;margin-top:22px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:7px}
+  footer .lin{display:flex;align-items:center;gap:9px}
+  footer .lin .omni{width:30px;height:30px}
+  footer .lin .nombre{font-size:18px;font-weight:800;color:var(--omni-azul)}
+  footer .colab{display:flex;align-items:center;gap:8px;margin-top:2px}
+  footer .colab span{font-size:10.5px;color:#9aa3ba;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+  footer .colab .chinoin-logo{width:92px;height:22px}
+  footer .legal{font-size:11px;color:#9aa3ba;margin-top:2px}
+
+  @media (max-width:820px){ .escena{gap:26px} .producto{order:-1} }
+</style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       [CONFIG-LOGO] LOGOTIPOS + iconos NFC reutilizables
+       ========================================================================== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="omniMark" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="24" fill="none" stroke="var(--omni-rojo)" stroke-width="8"/>
+      <path d="M9.6 39.8 A24 24 0 0 0 55.2 34.6" fill="none" stroke="var(--omni-azul)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M19 43 C20 29 29 23 43 24" fill="none" stroke="var(--omni-rojo)" stroke-width="6.5" stroke-linecap="round"/>
+      <path d="M35.5 17 L48 22 L41.5 33.5 Z" fill="var(--omni-rojo)"/>
+    </symbol>
+    <symbol id="chinoinLogo" viewBox="0 0 152 44">
+      <text x="0" y="33" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="34" letter-spacing="-1" fill="var(--chinoin-rojo)">CHINOIN</text>
+      <text x="138" y="15" font-family="Arial, sans-serif" font-size="11" fill="var(--chinoin-rojo)">®</text>
+    </symbol>
+    <!-- Glifo NFC (ondas + tarjeta) -->
+    <symbol id="icoNfc" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 9a10 10 0 0 1 0 6M9 7a6 6 0 0 1 0 10M13 5.5a2.5 2.5 0 0 1 0 13"/>
+        <path d="M13 5.5 A2.5 2.5 0 0 0 13 18.5"/>
+      </g>
+    </symbol>
+  </svg>
+
+  <!-- ================= ENCABEZADO EXTERNO ================================== -->
+  <header class="marca">
+    <div class="prov">
+      <svg class="omni" viewBox="0 0 64 64" aria-label="omnitrademx"><use href="#omniMark"/></svg>
+      <div class="txt"><div class="n">omnitrademx</div><div class="s">Plataforma de apoyo médico</div></div>
+    </div>
+    <div class="cobrand">
+      <div><small>Solución para</small>
+        <svg class="chinoin-logo" viewBox="0 0 152 44" role="img" aria-label="Chinoin"><use href="#chinoinLogo"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= TÍTULO DE LA DEMO =================================== -->
+  <div class="demo-titulo">
+    <span class="k"><svg viewBox="0 0 24 24" style="width:15px;height:15px" aria-hidden="true"><use href="#icoNfc"/></svg> Línea de productos con sensor NFC</span>
+    <h1>Un acercamiento conecta al médico con Chinoin</h1>
+    <p>El médico acerca su celular al sensor NFC del empaque y es enviado a descargar <b>Chinoin&nbsp;Conecta</b>, la app para dar seguimiento al tratamiento de sus pacientes.</p>
+  </div>
+
+  <!-- ================= ESCENA: PRODUCTO + CELULAR ========================== -->
+  <div class="escena" id="escena">
+
+    <!-- Producto físico con sensor NFC -->
+    <div class="producto">
+      <div class="caja">
+        <div class="marca-caja">CHINOIN</div>
+        <div class="prod">Norutec®</div>
+        <div class="sub">Ilaprazol · 10 mg<br>30 comprimidos</div>
+        <div class="rx">℞</div>
+        <div class="dosis">NFC</div>
+        <!-- Medallón + ondas NFC -->
+        <div class="ondas"><span></span><span></span><span></span></div>
+        <div class="nfc-chip"><svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg></div>
+      </div>
+      <div class="etiqueta-nfc"><svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg> Sensor NFC en el empaque</div>
+    </div>
+
+    <!-- Celular del médico -->
+    <div class="telefono">
+      <div class="pantalla">
+        <div class="statusbar claro" id="statusbar"><span>9:41</span><span class="ic">▮▮▮ 📶 🔋</span></div>
+
+        <!-- Banner de notificación NFC -->
+        <div class="nfc-banner" id="nfcBanner">
+          <div class="ic"><svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg></div>
+          <div>
+            <div class="tt">Producto Chinoin detectado</div>
+            <div class="ds">Norutec® · Toca para continuar</div>
+          </div>
+          <div class="flecha">›</div>
+        </div>
+
+        <div class="screens">
+          <!-- ---- Pantalla: bloqueo / idle ---- -->
+          <section class="screen activa" id="s-lock">
+            <div class="hora" id="lockHora">9:41</div>
+            <div class="fecha">Martes 14 de julio</div>
+            <div class="hint">
+              <div class="glow"><svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg></div>
+              Acerca el celular al empaque
+            </div>
+          </section>
+
+          <!-- ---- Pantalla: landing / descarga ---- -->
+          <section class="screen" id="s-landing">
+            <div class="land-top">
+              <span class="badge">chinoin.mx/conecta</span>
+              <div class="app-ico"><svg viewBox="0 0 24 24" style="color:var(--azul)"><use href="#icoNfc"/></svg></div>
+              <h2>Chinoin Conecta</h2>
+              <p>Descarga la app y da seguimiento al tratamiento de tus pacientes desde el consultorio.</p>
+              <div class="stores">
+                <a class="store"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 2H7a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zm-5 19a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg> App Store</a>
+                <a class="store"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3l14 9L4 21V3z"/></svg> Google Play</a>
+              </div>
+            </div>
+
+            <div class="beneficios-land">
+              <div class="bl"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></div><div><b>Registro inmediato</b><span>Vincula el producto con solo acercar el celular.</span></div></div>
+              <div class="bl"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></div><div><b>Recordatorios de toma</b><span>El paciente recibe avisos para no suspender.</span></div></div>
+              <div class="bl"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div><div><b>Seguimiento de adherencia</b><span>Consulta la evolución real de cada paciente.</span></div></div>
+            </div>
+
+            <!-- Línea de productos NFC -->
+            <div class="linea-prod">
+              <div class="cab">Línea con sensor NFC</div>
+              <div class="fila">
+                <div class="lp-card"><div class="nfc-tag"><svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg></div>
+                  <div class="mini" style="background:linear-gradient(150deg,#E6007E,#2E9BD6)">Rx</div>
+                  <div class="nom">Norutec®</div><div class="cat">Gastro</div></div>
+                <div class="lp-card"><div class="nfc-tag"><svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg></div>
+                  <div class="mini" style="background:linear-gradient(150deg,#0a6ebd,#073b6e)">Rx</div>
+                  <div class="nom">Línea cardio</div><div class="cat">Ejemplo</div></div>
+                <div class="lp-card"><div class="nfc-tag"><svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg></div>
+                  <div class="mini" style="background:linear-gradient(150deg,#1fae7a,#127a55)">Rx</div>
+                  <div class="nom">Línea metab.</div><div class="cat">Ejemplo</div></div>
+              </div>
+            </div>
+
+            <button class="btn btn-cta" id="btnAbrirApp">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              Abrir app (demo)
+            </button>
+          </section>
+
+          <!-- ---- Pantalla: onboarding ---- -->
+          <section class="screen" id="s-onboard">
+            <div class="ob-hd">
+              <div class="app-ico"><svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg></div>
+              <div class="t"><b>Chinoin Conecta</b><span>Hola, Dr. Ramírez</span></div>
+            </div>
+
+            <div class="ob-card">
+              <div class="lbl">Producto vinculado por NFC</div>
+              <div class="vinc">
+                <div class="mini-box"></div>
+                <div class="info"><b>Norutec® 10 mg</b><span>Lote 4C-2291 · caduca 08/2027</span></div>
+                <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+              </div>
+            </div>
+
+            <div class="ob-card">
+              <div class="lbl">Iniciar seguimiento de paciente</div>
+              <div class="ob-paso"><div class="n">1</div><div>Registra al paciente y su diagnóstico (ERGE, esofagitis o úlcera).</div></div>
+              <div class="ob-paso"><div class="n">2</div><div>Configura el esquema: dosis, horario y duración del tratamiento.</div></div>
+              <div class="ob-paso"><div class="n">3</div><div>El paciente recibe recordatorios y tú sigues su adherencia en tiempo real.</div></div>
+            </div>
+
+            <button class="btn btn-cta" id="btnIniciarSeg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              Iniciar seguimiento
+            </button>
+          </section>
+
+          <!-- ---- Pantalla: seguimiento (dashboard) ---- -->
+          <section class="screen" id="s-segui">
+            <div class="seg-hd">
+              <h2>Seguimiento</h2>
+              <span class="live">En vivo</span>
+            </div>
+
+            <div class="pac-card">
+              <div class="av">MP</div>
+              <div><b>Paciente · M. Pérez</b><span>ERGE · Norutec® 10 mg / día</span></div>
+              <div class="via">Vinculado por<br>NFC · día 12</div>
+            </div>
+
+            <div class="grid2">
+              <div class="metrica">
+                <div class="anillo">
+                  <svg width="92" height="92" viewBox="0 0 92 92">
+                    <circle cx="46" cy="46" r="40" fill="none" stroke="#e6eaf2" stroke-width="9"/>
+                    <circle id="anilloProg" cx="46" cy="46" r="40" fill="none" stroke="var(--verde)" stroke-width="9"
+                            stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
+                  </svg>
+                  <div class="pct"><b id="adhPct">0%</b><span>Adherencia</span></div>
+                </div>
+                <div class="cap">Últimos 14 días</div>
+              </div>
+              <div class="metrica racha">
+                <div class="fuego">🔥</div>
+                <div class="big">12</div>
+                <div class="u">días seguidos</div>
+              </div>
+            </div>
+
+            <div class="bloque">
+              <div class="th"><b>Tomas de la semana</b><span>6 / 7</span></div>
+              <div class="dias" id="diasSemana"></div>
+            </div>
+
+            <div class="bloque evol">
+              <div class="th"><b>Evolución de síntomas</b><span>agruras / ardor</span></div>
+              <svg viewBox="0 0 260 74" id="svgEvol" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="gEvolFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="rgba(31,174,122,.28)"/><stop offset="1" stop-color="rgba(31,174,122,0)"/>
+                  </linearGradient>
+                </defs>
+                <polyline id="evolFill" fill="url(#gEvolFill)" stroke="none" points=""/>
+                <polyline id="evolLine" fill="none" stroke="var(--verde)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points=""/>
+              </svg>
+              <div class="leyenda"><span>Semana 1 · alto</span><span>Semana 4 · controlado</span></div>
+            </div>
+
+            <div class="recordatorio">
+              <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+              <div><b>Próxima toma: hoy 21:00</b><span>Recordatorio activo · el paciente confirmará en la app.</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CONTROLES DE LA DEMO ================================ -->
+  <div class="controles">
+    <button class="ctl ctl-primario" id="btnAcercar">
+      <svg viewBox="0 0 24 24"><use href="#icoNfc"/></svg> Acercar el celular (NFC)
+    </button>
+    <button class="ctl ctl-sec" id="btnAuto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/></svg>
+      Reproducir demo
+    </button>
+    <button class="ctl ctl-sec" id="btnReset">↺ Reiniciar</button>
+    <div class="paso-ind" id="pasoInd">Paso 1 de 4 · Acerca el celular al sensor NFC</div>
+  </div>
+
+  <!-- Banner + footer -->
+  <div class="banner-demo"><b>DEMO CONCEPTUAL</b> — prototipo de experiencia NFC; la versión final requiere hardware y desarrollo de producción.</div>
+  <footer class="cierre">
+    <div class="lin"><svg class="omni" viewBox="0 0 64 64" aria-hidden="true"><use href="#omniMark"/></svg><span class="nombre">omnitrademx</span></div>
+    <div class="colab"><span>Desarrollado para</span>
+      <svg class="chinoin-logo" viewBox="0 0 152 44" aria-label="Chinoin"><use href="#chinoinLogo"/></svg>
+    </div>
+    <div class="legal">Chinoin Conecta y Norutec® son marcas de Chinoin. Prototipo demostrativo, contenido ilustrativo.</div>
+  </footer>
+
+<script>
+/* ==========================================================================
+   ESTADO Y NAVEGACIÓN
+   Pasos: 0 lock → 1 landing → 2 onboard → 3 seguimiento
+   ========================================================================== */
+const $ = (id)=>document.getElementById(id);
+const escena = $('escena');
+const pantallas = ['s-lock','s-landing','s-onboard','s-segui'];
+const rotulos = [
+  'Paso 1 de 4 · Acerca el celular al sensor NFC',
+  'Paso 2 de 4 · El médico descarga Chinoin Conecta',
+  'Paso 3 de 4 · Vincula el producto e inicia el seguimiento',
+  'Paso 4 de 4 · Seguimiento de adherencia del paciente'
+];
+let paso = 0;
+let reproduciendo = false;
+
+function mostrar(idx){
+  paso = idx;
+  pantallas.forEach((id,i)=> $(id).classList.toggle('activa', i===idx));
+  $('pasoInd').textContent = rotulos[idx];
+  // barra de estado: clara sobre el fondo azul del lock, oscura sobre blanco
+  $('statusbar').classList.toggle('claro', idx===0);
+  if(idx===3) animarSeguimiento();
+}
+
+/* --- Paso NFC: acercar el celular --- */
+function acercar(){
+  if(paso!==0) return;
+  escena.classList.add('acercando');
+  // tras un momento, aparece el banner de notificación
+  setTimeout(()=> $('nfcBanner').classList.add('show'), 1200);
+}
+function abrirDesdeBanner(){
+  $('nfcBanner').classList.remove('show');
+  escena.classList.remove('acercando');
+  mostrar(1);           // landing
+}
+
+$('btnAcercar').addEventListener('click', acercar);
+$('nfcBanner').addEventListener('click', abrirDesdeBanner);
+$('btnAbrirApp').addEventListener('click', ()=> mostrar(2));
+$('btnIniciarSeg').addEventListener('click', ()=> mostrar(3));
+
+$('btnReset').addEventListener('click', reiniciar);
+function reiniciar(){
+  escena.classList.remove('acercando');
+  $('nfcBanner').classList.remove('show');
+  resetSeguimiento();
+  mostrar(0);
+}
+
+/* ==========================================================================
+   DASHBOARD DE SEGUIMIENTO — animaciones
+   ========================================================================== */
+// Días de la semana (6 de 7 tomados)
+const TOMAS = [true,true,true,true,false,true,true];     // [CONFIG-TEXTOS]
+const NOMS = ['L','M','M','J','V','S','D'];
+const iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const iconX = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+$('diasSemana').innerHTML = TOMAS.map((ok,i)=>`
+  <div class="dia"><div class="marca ${ok?'ok':'no'}">${ok?iconCheck:iconX}</div><div class="d">${NOMS[i]}</div></div>`).join('');
+
+// Evolución de síntomas (de alto a controlado). Valores 0..1 (1=peor)
+const EVOL = [0.92,0.8,0.72,0.5,0.42,0.28,0.18,0.12];    // [CONFIG-TEXTOS]
+function puntosEvol(){
+  const W=260,H=74,pad=6;
+  return EVOL.map((v,i)=>{
+    const x = pad + (W-2*pad)*(i/(EVOL.length-1));
+    // v=1 (síntomas altos) arriba; v=0 (controlado) abajo → la línea DESCIENDE
+    const y = pad + (H-2*pad)*(1-v);
+    return [x,y];
+  });
+}
+let animAdh = null;
+function animarSeguimiento(){
+  // anillo de adherencia → 92%
+  const circ = 2*Math.PI*40;                 // circunferencia (r=40)
+  const objetivo = 0.92;
+  $('anilloProg').style.transition = 'stroke-dashoffset 1.3s ease';
+  $('anilloProg').style.strokeDashoffset = circ*(1-objetivo);
+  // número que sube
+  let n=0; clearInterval(animAdh);
+  animAdh = setInterval(()=>{ n++; $('adhPct').textContent = n+'%'; if(n>=92) clearInterval(animAdh); }, 14);
+
+  // línea de evolución (se dibuja)
+  const pts = puntosEvol();
+  const linea = pts.map(p=>p.join(',')).join(' ');
+  $('evolLine').setAttribute('points', linea);
+  $('evolFill').setAttribute('points', `6,68 ${linea} 254,68`);
+  const len = $('evolLine').getTotalLength ? $('evolLine').getTotalLength() : 300;
+  const ln = $('evolLine');
+  ln.style.transition='none'; ln.style.strokeDasharray=len; ln.style.strokeDashoffset=len;
+  void ln.getBoundingClientRect();
+  ln.style.transition='stroke-dashoffset 1.4s ease'; ln.style.strokeDashoffset=0;
+}
+function resetSeguimiento(){
+  clearInterval(animAdh);
+  $('adhPct').textContent='0%';
+  const circ = 2*Math.PI*40;
+  $('anilloProg').style.transition='none';
+  $('anilloProg').style.strokeDashoffset=circ;
+}
+
+/* ==========================================================================
+   MODO AUTOMÁTICO — recorre toda la historia solo
+   ========================================================================== */
+const dormir = (ms)=> new Promise(r=> setTimeout(r, ms));
+async function reproducir(){
+  if(reproduciendo) return;
+  reproduciendo = true;
+  $('btnAuto').disabled = true;
+  reiniciar();
+  await dormir(900);
+  acercar();                 // ondas NFC + acercamiento
+  await dormir(2100);        // espera el banner
+  abrirDesdeBanner();        // → landing
+  await dormir(3200);        // deja leer la landing y la línea de productos
+  mostrar(2);                // → onboarding
+  await dormir(3200);
+  mostrar(3);                // → seguimiento (dispara animaciones)
+  await dormir(4200);
+  $('btnAuto').disabled = false;
+  reproduciendo = false;
+}
+$('btnAuto').addEventListener('click', reproducir);
+
+/* Arranque */
+resetSeguimiento();
+mostrar(0);
+</script>
+</body>
+</html>
