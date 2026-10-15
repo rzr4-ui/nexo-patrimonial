@@ -1,3 +1,4 @@
+import { ZoneSearch } from "@/components/sections/zone-search";
 import { Navbar } from "@/components/navbar";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { Hero } from "@/components/sections/hero";
@@ -19,6 +20,7 @@ export default function Home() {
       <Navbar />
       <main className="flex-1">
         <Hero />
+        <ZoneSearch />
         <Patrimonio360 />
         <Services />
         <Innovation />
